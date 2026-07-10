@@ -1,304 +1,386 @@
 'use client';
-import dynamic from 'next/dynamic';
+
 import Link from 'next/link';
-import { useInView } from 'react-intersection-observer';
+import dynamic from 'next/dynamic';
+import { COMPANY, INDUSTRIES, SERVICES } from '@/lib/constants';
+import { Button, MetricCard, Section } from '@/components/ui';
+import { useFirestoreProducts } from '@/hooks/useFirestoreProducts';
+import { useReveal } from '@/hooks/useReveal';
 import PassMethod from '@/components/PassMethod';
 
-const Hero3D = dynamic(() => import('@/components/Hero3D'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="spinner" role="status" aria-label="Loading 3D model" />
-    </div>
-  ),
-});
-
-const services = [
-  { icon: '🧯', title: 'Fire Extinguishers', desc: 'CO₂, ABC Powder, AFFF Foam, Water – complete range for every fire class.', href: '/products' },
-  { icon: '🚨', title: 'Fire Alarm Systems', desc: 'Smart detection systems with control panels, smoke detectors & call points.', href: '/products' },
-  { icon: '🚒', title: 'Fire Hydrant Systems', desc: 'Complete hydrant equipment including hoses, nozzles, valves and pumps.', href: '/products' },
-  { icon: '💨', title: 'Fire Suppression', desc: 'Automatic suppression systems for server rooms, kitchens & industrial use.', href: '/products' },
-  { icon: '🔧', title: 'Fire Safety AMC', desc: 'Annual Maintenance Contracts ensuring your systems stay compliant & ready.', href: '/amc' },
-  { icon: '🔍', title: 'Fire Safety Audits', desc: 'Comprehensive audits to identify risks and ensure regulatory compliance.', href: '/contact' },
-];
+/* Dynamic imports — only loaded when scrolled into view */
+import AnimatedCounter from '@/components/landing/AnimatedCounter';
+import Timeline from '@/components/landing/Timeline';
+import CategoryShowcase from '@/components/landing/CategoryShowcase';
+import TestimonialCarousel from '@/components/landing/TestimonialCarousel';
+import FAQAccordion from '@/components/landing/FAQAccordion';
 
 const stats = [
-  { number: '500+', label: 'Clients Served', suffix: '' },
-  { number: '10+', label: 'Years Experience', suffix: '' },
-  { number: '24/7', label: 'Emergency Support', suffix: '' },
-  { number: '100%', label: 'Safety Compliant', suffix: '' },
+  { end: 500, suffix: '+', label: 'Clients protected', detail: 'Industrial, commercial, and residential' },
+  { end: 10, suffix: '+', label: 'Years expertise', detail: 'Fire safety consultation and service' },
+  { end: 24, suffix: '/7', label: 'Emergency support', detail: 'Rapid response phone and WhatsApp' },
+  { end: 100, suffix: '%', label: 'Compliance focus', detail: 'Products aligned to BIS standards' },
 ];
 
-function StatCard({ stat, index }) {
-  const [ref, inView] = useInView({ threshold: 0.5, triggerOnce: true });
+const whyChooseUs = [
+  {
+    icon: '🛡️',
+    title: 'Certified Products',
+    desc: 'Every product we supply is sourced from certified manufacturers and meets recognized Indian and international standards.',
+  },
+  {
+    icon: '⚡',
+    title: 'Rapid Response',
+    desc: '24/7 emergency support with same-day response for critical equipment needs and urgent servicing requirements.',
+  },
+  {
+    icon: '📋',
+    title: 'Complete Documentation',
+    desc: 'Detailed inspection reports, compliance certificates, AMC logs, and audit-ready documentation for every installation.',
+  },
+  {
+    icon: '🔧',
+    title: 'End-to-End Service',
+    desc: 'From initial site survey through installation, training, and long-term AMC — we manage the entire fire safety lifecycle.',
+  },
+  {
+    icon: '🏭',
+    title: 'Industry Expertise',
+    desc: 'Specialized solutions for factories, hospitals, schools, hotels, warehouses, and commercial complexes.',
+  },
+  {
+    icon: '💰',
+    title: 'Transparent Pricing',
+    desc: 'Clear quotations, no hidden charges, and flexible AMC plans tailored to your facility size and risk profile.',
+  },
+];
+
+const certifications = [
+  'BIS Certified', 'ISO 9001', 'IS 15683', 'IS 2190', 'NFPA Compliant', 'TAC Approved',
+];
+
+const processSteps = [
+  { step: '01', title: 'Survey', desc: 'On-site walkthrough, risk mapping, equipment inventory, and requirement capture.', icon: '🔍' },
+  { step: '02', title: 'Design', desc: 'Equipment selection, placement strategy, coverage analysis, and compliance planning.', icon: '📐' },
+  { step: '03', title: 'Deploy', desc: 'Product supply, professional installation, system testing, and team training.', icon: '🚀' },
+  { step: '04', title: 'Maintain', desc: 'Scheduled AMC visits, refilling, documentation, and emergency response support.', icon: '🔧' },
+];
+
+const amcPlans = [
+  { title: 'Essential', price: 'Custom', target: 'Small offices, shops, and residential', features: ['Annual inspection', 'Basic compliance report', 'Refilling coordination', 'Phone support'] },
+  { title: 'Professional', price: 'Custom', target: 'Commercial buildings and institutions', features: ['Quarterly servicing', 'Full compliance documentation', 'Priority emergency support', 'Equipment testing', 'Detailed reports'], featured: true },
+  { title: 'Enterprise', price: 'Custom', target: 'Factories, campuses, multi-site', features: ['Custom visit schedule', 'Asset lifecycle register', 'Emergency response planning', 'Dedicated account manager', '24/7 priority line', 'Regulatory liaison'] },
+];
+
+function FeaturedProducts() {
+  const { products, loading } = useFirestoreProducts();
+  const featured = products.filter((p) => p.featured).slice(0, 4);
+  const display = featured.length ? featured : products.slice(0, 4);
+  const [ref, inView] = useReveal();
+
+  if (loading || display.length === 0) return null;
+
   return (
-    <div
-      ref={ref}
-      className={`text-center transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-      style={{ transitionDelay: `${index * 150}ms` }}
+    <Section
+      eyebrow="Live catalog"
+      title="Featured protection equipment"
+      description="Products are synchronized in real-time from the admin dashboard through Firestore."
+      className="bg-[#070707]"
     >
-      <div className="stat-counter text-4xl lg:text-5xl text-gold-gradient mb-1">{stat.number}</div>
-      <div className="text-xs tracking-[0.25em] text-gray-400 uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{stat.label}</div>
-    </div>
+      <div ref={ref} className={`container-wide grid gap-5 sm:grid-cols-2 lg:grid-cols-4 reveal ${inView ? 'is-visible' : ''}`}>
+        {display.map((product) => (
+          <Link
+            key={product.id}
+            href={`/products/${product.slug || product.id}`}
+            className="card-premium p-6 group"
+          >
+            {product.image && (
+              <div className="product-media mb-4 rounded-2xl overflow-hidden h-40">
+                <img src={product.image} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+              </div>
+            )}
+            <p className="eyebrow mb-2">{product.category || 'Product'}</p>
+            <h3 className="font-display text-xl font-bold group-hover:text-[#f5d76e] transition-colors">{product.name}</h3>
+            {product.price && <p className="mt-2 font-bold text-[#f5d76e]">INR {product.price}</p>}
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/50">{product.description}</p>
+            <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#f5d76e]">
+              View details
+              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </span>
+          </Link>
+        ))}
+      </div>
+      <div className="container-pro text-center mt-10">
+        <Button href="/products" variant="secondary">View all products</Button>
+      </div>
+    </Section>
   );
 }
 
-function ServiceCard({ service, index }) {
-  const [ref, inView] = useInView({ threshold: 0.2, triggerOnce: true });
+function RevealCard({ children, className = '', delay = 0 }) {
+  const [ref, inView] = useReveal();
   return (
     <div
       ref={ref}
-      className={`card-premium p-7 group cursor-pointer transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-      style={{ transitionDelay: `${index * 80}ms` }}
+      className={`reveal ${inView ? 'is-visible' : ''} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
     >
-      <Link href={service.href}>
-        <div className="text-3xl mb-4" aria-hidden="true">{service.icon}</div>
-        <h3 className="text-white font-bold text-lg mb-2 group-hover:text-[#C9A227] transition-colors"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.05em' }}>
-          {service.title}
-        </h3>
-        <p className="text-gray-500 text-sm leading-relaxed">{service.desc}</p>
-        <div className="mt-5 flex items-center gap-2 text-[#C9A227] text-xs tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-          LEARN MORE <span aria-hidden="true">→</span>
-        </div>
-      </Link>
+      {children}
     </div>
   );
 }
 
 export default function HomePage() {
-  const [heroRef, heroInView] = useInView({ threshold: 0.1, triggerOnce: true });
-
   return (
     <>
-      {/* Hero Section */}
-      <section className="hero-bg min-h-screen relative overflow-hidden flex items-center" aria-label="Hero section">
-        {/* Animated background particles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-px bg-gradient-to-b from-transparent via-[rgba(201,162,39,0.3)] to-transparent"
-              style={{
-                left: `${10 + i * 12}%`,
-                height: `${40 + i * 8}%`,
-                top: `${5 + i * 8}%`,
-                animationName: 'float',
-                animationDuration: `${6 + i * 1.2}s`,
-                animationTimingFunction: 'ease-in-out',
-                animationIterationCount: 'infinite',
-                animationDelay: `${i * 0.8}s`,
-                opacity: 0.3,
-              }}
+      {/* ════════ Enterprise Hero ════════ */}
+      <section className="hero-shell">
+        <div className="orbital-bg" aria-hidden="true">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <span key={i} style={{ left: `${8 + i * 11}%`, top: `${8 + (i % 4) * 18}%`, animationDelay: `${i * 0.5}s` }} />
+          ))}
+        </div>
+        <div className="container-wide hero-grid">
+          <div className="relative z-10">
+            <p className="eyebrow">Vellore's trusted fire safety partner</p>
+            <h1 className="heading-xl max-w-5xl">
+              Fire protection with <span className="text-gold-gradient">enterprise</span> discipline.
+            </h1>
+            <p className="lead-copy mt-6 max-w-2xl">
+              Certified products, responsive service, and complete fire safety lifecycle support for facilities across Vellore and Tamil Nadu.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Button href="/products" variant="primary">Explore products</Button>
+              <Button href="/amc" variant="secondary">Request AMC</Button>
+              <Button href={`tel:${COMPANY.phoneHref}`} variant="secondary">{COMPANY.phoneDisplay}</Button>
+            </div>
+            <div className="mt-9 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+              {['BIS Certified', 'Site Survey', 'AMC Reports', '24/7 Support'].map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 text-center text-xs font-semibold text-white/62">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative z-10 overflow-hidden rounded-[40px] border border-white/10 bg-[radial-gradient(circle_at_50%_18%,rgba(201,162,39,.22),transparent_44%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03))] p-5 shadow-[0_30px_120px_rgba(0,0,0,.42)]">
+            <div className="hero-visual">
+              <div className="hero-device">
+                <span className="hero-device-ring" />
+                <span className="hero-device-core" />
+                <span className="hero-device-label">VE</span>
+              </div>
+              <div className="hero-facts">
+                <div><strong>Fast response</strong><span>24/7 support channel</span></div>
+                <div><strong>Certified supply</strong><span>Products and AMC</span></div>
+                <div><strong>Clear workflow</strong><span>Survey to maintenance</span></div>
+              </div>
+            </div>
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/35 px-4 py-2 text-xs text-white/55 backdrop-blur-xl">
+              Premium fire safety platform
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ Animated KPI Counters ════════ */}
+      <section className="border-y border-white/10 bg-white/[0.025] py-6">
+        <div className="container-wide grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <AnimatedCounter
+              key={stat.label}
+              end={stat.end}
+              suffix={stat.suffix}
+              label={stat.label}
+              detail={stat.detail}
             />
           ))}
-          <div className="absolute top-1/4 right-0 w-1/2 h-1/2 bg-[radial-gradient(ellipse,rgba(201,162,39,0.06)_0%,transparent_70%)]" />
-          <div className="absolute bottom-0 left-1/4 w-1/3 h-1/3 bg-[radial-gradient(ellipse,rgba(204,34,0,0.05)_0%,transparent_70%)]" />
         </div>
+      </section>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 lg:pt-28 lg:pb-16 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center min-h-[80vh]">
-            {/* Content */}
-            <div ref={heroRef} className={`z-10 transition-all duration-1000 ${heroInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 border border-[rgba(201,162,39,0.3)] bg-[rgba(201,162,39,0.05)] mb-8">
-                <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" aria-hidden="true" />
-                <span className="text-[#C9A227] text-xs tracking-[0.3em] uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  Vellore's Trusted Fire Safety Partner
-                </span>
+      {/* ════════ Trusted Industries ════════ */}
+      <Section
+        eyebrow="Trusted by"
+        title="Serving high-responsibility environments"
+        description="Our products and services protect people and assets across Tamil Nadu's most critical facilities."
+      >
+        <div className="container-pro grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {INDUSTRIES.map((industry, i) => (
+            <RevealCard key={industry} delay={i * 60} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 text-center group hover:border-[#c9a227]/40 hover:bg-[#c9a227]/5 transition-all">
+              <p className="font-semibold text-white/72 group-hover:text-[#f5d76e] transition-colors">{industry}</p>
+            </RevealCard>
+          ))}
+        </div>
+      </Section>
+
+      {/* ════════ Product Categories ════════ */}
+      <Section
+        eyebrow="Product range"
+        title="Complete fire safety categories"
+        description="Browse our full range of certified fire protection products, each category backed by industry-leading brands."
+        className="bg-[#070707]"
+      >
+        <div className="container-pro">
+          <CategoryShowcase />
+        </div>
+      </Section>
+
+      {/* ════════ Why Choose Us ════════ */}
+      <Section
+        eyebrow="Advantages"
+        title="Why facilities choose Vellore Enterprises"
+        description="We combine local availability with professional processes: assessment, product selection, installation, documentation, and maintenance."
+      >
+        <div className="container-wide grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {whyChooseUs.map((item, i) => (
+            <RevealCard key={item.title} delay={i * 80} className="card-premium p-7">
+              <span className="mb-5 inline-grid h-14 w-14 place-items-center rounded-2xl bg-[#c9a227]/12 text-2xl">
+                {item.icon}
+              </span>
+              <h3 className="font-display text-2xl font-bold">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-white/55">{item.desc}</p>
+            </RevealCard>
+          ))}
+        </div>
+      </Section>
+
+      {/* ════════ Company Timeline ════════ */}
+      <Section
+        eyebrow="Our journey"
+        title="Building trust since 2014"
+        description="From a local fire safety supplier to a complete protection partner for facilities across Tamil Nadu."
+        className="bg-[#070707]"
+      >
+        <div className="container-pro">
+          <Timeline />
+        </div>
+      </Section>
+
+      {/* ════════ Certifications ════════ */}
+      <section className="border-y border-white/10 bg-white/[0.025] py-12">
+        <div className="container-pro">
+          <p className="eyebrow text-center">Certifications and compliance</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {certifications.map((cert) => (
+              <div key={cert} className="badge badge-gold text-sm px-5 py-2">
+                {cert}
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <h1
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight mb-6"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                Protecting{' '}
-                <em className="text-gold-gradient not-italic">Lives</em>{' '}
-                Through Advanced{' '}
-                <span className="text-fire-gradient">Fire Safety</span>
-              </h1>
+      {/* ════════ Fire Protection Process ════════ */}
+      <Section
+        eyebrow="Delivery model"
+        title="A clear path from risk to readiness"
+        description="Our systematic four-step process ensures complete coverage from initial assessment to long-term maintenance."
+      >
+        <div className="container-pro grid gap-5 md:grid-cols-4">
+          {processSteps.map((item, i) => (
+            <RevealCard key={item.step} delay={i * 100} className="glass-panel p-6 text-center">
+              <span className="text-3xl mb-4 block">{item.icon}</span>
+              <span className="font-condensed text-4xl font-black text-[#f5d76e]">{item.step}</span>
+              <h3 className="mt-4 font-display text-2xl font-bold">{item.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/55">{item.desc}</p>
+            </RevealCard>
+          ))}
+        </div>
+      </Section>
 
-              <p className="text-gray-400 text-lg lg:text-xl leading-relaxed mb-8 max-w-xl">
-                Complete fire protection solutions for industries, businesses, and homes across Vellore and Tamil Nadu. From extinguishers to full system installations.
-              </p>
+      {/* ════════ Featured Products ════════ */}
+      <FeaturedProducts />
 
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-4 mb-10">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-2 px-7 py-4 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black font-bold text-sm tracking-wider hover:from-[#F5D76E] hover:to-[#C9A227] transition-all duration-300 btn-shimmer"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                >
-                  <span aria-hidden="true">🧯</span> ORDER PRODUCTS
-                </Link>
-                <Link
-                  href="/amc"
-                  className="inline-flex items-center gap-2 px-7 py-4 border border-[rgba(201,162,39,0.4)] text-[#C9A227] font-bold text-sm tracking-wider hover:bg-[rgba(201,162,39,0.1)] hover:border-[#C9A227] transition-all duration-300"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                >
-                  <span aria-hidden="true">📋</span> REQUEST AMC
-                </Link>
-                <a
-                  href="tel:+918072264972"
-                  className="inline-flex items-center gap-2 px-7 py-4 border border-[rgba(255,255,255,0.1)] text-gray-300 font-bold text-sm tracking-wider hover:border-white hover:text-white transition-all duration-300"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                >
-                  <span aria-hidden="true">📞</span> CONTACT US
-                </a>
-              </div>
-
-              {/* Trust indicators */}
-              <div className="flex flex-wrap items-center gap-5 text-xs text-gray-500">
-                {['IS Certified Products', 'BIS Approved', '24/7 Support', 'Free Site Survey'].map((tag) => (
-                  <span key={tag} className="flex items-center gap-1.5">
-                    <span className="text-[#C9A227]" aria-hidden="true">✓</span> {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* 3D Model */}
-            <div
-              className="relative z-10 h-[50vh] sm:h-[60vh] lg:h-[85vh]"
-              aria-label="Interactive 3D fire extinguisher - drag to rotate"
+      {/* ════════ AMC Plans Preview ════════ */}
+      <Section
+        eyebrow="Annual maintenance"
+        title="AMC plans for every facility"
+        description="Preventive maintenance keeps your fire safety systems inspection-ready and compliant year-round."
+      >
+        <div className="container-pro grid gap-5 md:grid-cols-3">
+          {amcPlans.map((plan, i) => (
+            <RevealCard
+              key={plan.title}
+              delay={i * 100}
+              className={`card-premium p-7 relative ${plan.featured ? 'border-[#c9a227]/60 shadow-[0_0_60px_rgba(201,162,39,0.15)]' : ''}`}
             >
-              <Hero3D />
-              {/* Interaction hint */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                <p className="text-[10px] tracking-[0.2em] text-gray-600 uppercase animate-pulse" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  Drag to rotate
-                </p>
-              </div>
-            </div>
-          </div>
+              {plan.featured && (
+                <span className="absolute -top-3 left-6 badge badge-gold">Most Popular</span>
+              )}
+              <h3 className="font-display text-3xl font-bold">{plan.title}</h3>
+              <p className="mt-2 text-sm text-white/50">{plan.target}</p>
+              <p className="mt-4 font-condensed text-2xl font-bold text-[#f5d76e]">{plan.price}</p>
+              <ul className="mt-6 space-y-3">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex gap-3 text-sm text-white/65">
+                    <svg className="w-5 h-5 text-[#c9a227] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button href="/amc" variant={plan.featured ? 'primary' : 'secondary'} className="w-full mt-7">
+                Request quote
+              </Button>
+            </RevealCard>
+          ))}
         </div>
+      </Section>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none" aria-hidden="true">
-          <div className="w-px h-12 bg-gradient-to-b from-[#C9A227] to-transparent animate-pulse" />
-        </div>
-      </section>
-
-      {/* Stats Bar */}
-      <section className="py-10 bg-[#0d0d0d] border-y border-[rgba(201,162,39,0.1)]" aria-label="Company statistics">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {stats.map((stat, i) => <StatCard key={i} stat={stat} index={i} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="py-24 lg:py-32 bg-[#0a0a0a]" aria-label="Our services">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs tracking-[0.4em] text-[#C9A227] uppercase mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-              What We Offer
-            </p>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Complete Fire Safety <span className="text-gold-gradient">Solutions</span>
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              From portable extinguishers to complete fire suppression systems – we deliver comprehensive protection for every requirement.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[rgba(201,162,39,0.06)]">
-            {services.map((s, i) => <ServiceCard key={i} service={s} index={i} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* PASS Method */}
+      {/* ════════ PASS Method ════════ */}
       <PassMethod />
 
-      {/* Why Choose Us */}
-      <section className="py-24 lg:py-32 bg-[#0d0d0d]" aria-label="Why choose Vellore Enterprises">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="text-xs tracking-[0.4em] text-[#C9A227] uppercase mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                Your Safety, Our Priority
-              </p>
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Why Choose <span className="text-gold-gradient">Vellore Enterprises?</span>
-              </h2>
-              <p className="text-gray-400 leading-relaxed mb-8">
-                With years of expertise in fire safety, we deliver reliable, certified fire protection solutions backed by expert service and 24/7 emergency support.
-              </p>
-              <div className="space-y-4">
-                {[
-                  { icon: '🏆', title: 'Expert Team', desc: 'Trained and certified fire safety professionals with hands-on experience.' },
-                  { icon: '✅', title: 'High-Quality Equipment', desc: 'BIS certified products meeting all Indian and international safety standards.' },
-                  { icon: '💰', title: 'Affordable Pricing', desc: 'Competitive pricing without compromising on quality or service.' },
-                  { icon: '🚨', title: '24/7 Emergency Support', desc: 'Round-the-clock availability for emergencies and urgent requirements.' },
-                ].map((item) => (
-                  <div key={item.title} className="flex gap-4 p-4 border border-[rgba(201,162,39,0.1)] hover:border-[rgba(201,162,39,0.3)] transition-colors">
-                    <span className="text-2xl flex-shrink-0" aria-hidden="true">{item.icon}</span>
-                    <div>
-                      <h3 className="text-white font-bold text-sm mb-1" style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.05em' }}>{item.title}</h3>
-                      <p className="text-gray-500 text-sm">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* ════════ Testimonials ════════ */}
+      <Section
+        eyebrow="Client confidence"
+        title="What our clients say"
+        description="Hear from facility managers, safety officers, and operations heads who trust Vellore Enterprises."
+      >
+        <div className="container-pro">
+          <TestimonialCarousel />
+        </div>
+      </Section>
 
-            {/* CTA Card */}
-            <div className="relative">
-              <div className="border border-[rgba(201,162,39,0.2)] bg-[rgba(201,162,39,0.03)] p-10 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(201,162,39,0.05)_0%,transparent_70%)]" aria-hidden="true" />
-                <div className="relative z-10">
-                  <div className="text-5xl mb-6" aria-hidden="true">🛡️</div>
-                  <h3 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    Get a Free <span className="text-gold-gradient">Site Survey</span>
-                  </h3>
-                  <p className="text-gray-400 mb-8">
-                    Let our experts assess your premises and recommend the right fire safety solutions tailored to your needs.
-                  </p>
-                  <div className="space-y-4">
-                    <a
-                      href="tel:+918072264972"
-                      className="flex items-center justify-center gap-3 w-full py-4 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black font-bold tracking-wider hover:from-[#F5D76E] hover:to-[#C9A227] transition-all duration-300 btn-shimmer"
-                      style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                    >
-                      📞 +91 80722 64972
-                    </a>
-                    <Link
-                      href="/contact"
-                      className="flex items-center justify-center gap-2 w-full py-4 border border-[rgba(201,162,39,0.3)] text-[#C9A227] font-bold tracking-wider hover:bg-[rgba(201,162,39,0.1)] transition-all duration-300"
-                      style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                    >
-                      SEND MESSAGE
-                    </Link>
-                  </div>
-                  <p className="text-gray-600 text-xs mt-6">No commitment required • Response within 2 hours</p>
-                </div>
-              </div>
+      {/* ════════ FAQ ════════ */}
+      <Section
+        eyebrow="Questions"
+        title="Frequently asked questions"
+        description="Common questions about our products, services, and support."
+        className="bg-[#070707]"
+      >
+        <div className="container-narrow">
+          <FAQAccordion />
+        </div>
+      </Section>
+
+      {/* ════════ Emergency CTA ════════ */}
+      <section className="py-6 bg-gradient-to-r from-[#9f1d0b]/20 via-[#f04418]/15 to-[#9f1d0b]/20 border-y border-[#f04418]/20">
+        <div className="container-wide flex flex-col md:flex-row items-center justify-between gap-4 py-3">
+          <div className="flex items-center gap-4">
+            <span className="text-3xl">🚨</span>
+            <div>
+              <p className="font-display text-lg font-bold">Fire safety emergency?</p>
+              <p className="text-sm text-white/60">Call our 24/7 emergency line for immediate assistance</p>
             </div>
+          </div>
+          <div className="flex gap-3">
+            <Button href={`tel:${COMPANY.phoneHref}`} variant="primary" className="btn-sm">
+              Call {COMPANY.phoneDisplay}
+            </Button>
+            <Button href="/contact" variant="secondary" className="btn-sm">Contact us</Button>
           </div>
         </div>
       </section>
 
-      {/* Emergency CTA Banner */}
-      <section className="py-10 bg-gradient-to-r from-[#1a0500] via-[#2a0800] to-[#1a0500] border-y border-[rgba(204,34,0,0.3)]" aria-label="Emergency contact">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <span className="text-3xl animate-pulse" aria-hidden="true">🚨</span>
-              <div>
-                <p className="text-white font-bold text-lg" style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.05em' }}>
-                  24/7 Emergency Fire Safety Support
-                </p>
-                <p className="text-gray-400 text-sm">Immediate response for fire safety emergencies across Vellore</p>
-              </div>
-            </div>
-            <a
-              href="tel:+918072264972"
-              className="flex-shrink-0 px-8 py-4 bg-[#CC2200] hover:bg-[#ee2600] text-white font-bold tracking-wider transition-colors btn-shimmer text-lg"
-              style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}
-            >
-              CALL NOW: +91 80722 64972
-            </a>
+      {/* ════════ Contact CTA ════════ */}
+      <section className="section-shell">
+        <div className="container-pro glass-panel p-8 text-center md:p-12">
+          <p className="eyebrow">Get started</p>
+          <h2 className="heading-lg">Ready to secure your facility?</h2>
+          <p className="section-copy mx-auto mt-5 max-w-2xl">
+            Talk to our team for certified equipment, site surveys, installation, AMC, and 24/7 emergency support across Vellore and Tamil Nadu.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button href={`tel:${COMPANY.phoneHref}`} variant="primary">Call {COMPANY.phoneDisplay}</Button>
+            <Button href="/contact" variant="secondary">Send message</Button>
           </div>
         </div>
       </section>

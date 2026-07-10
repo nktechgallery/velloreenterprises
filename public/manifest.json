@@ -1,0 +1,10 @@
+{
+  "name": "Vellore Enterprises",
+  "short_name": "Vellore",
+  "description": "Fire safety products, AMC, and emergency support in Vellore.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": []
+}

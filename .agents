@@ -1,0 +1,156 @@
+# Vellore Enterprises Agent Notes
+
+Use this file as the first project reference before coding in this repo. Update it whenever architecture, tooling, environment variables, important conventions, routes, or known risks change.
+
+## Project Summary
+
+- Next.js 14 App Router website for Vellore Enterprises, a fire safety business in Vellore, Tamil Nadu.
+- Main user flows: premium marketing home page, realtime product catalog, product detail pages, inquiry cart, AMC request form, contact form, WhatsApp fallbacks, and a protected admin product manager at `/velloreadmin`.
+- Frontend stack: React 18, Next.js App Router, Tailwind CSS, custom global design-system CSS, `react-hot-toast`, `react-intersection-observer`.
+- 3D stack was removed from the public experience to reduce client weight and build/runtime cost.
+- Backend/services: Firebase Auth and Firestore from browser code; Cloudinary signed upload API route for admin product images.
+
+## Important Files
+
+- `errors.txt`: chronological development-only error log for Firebase, Firestore, Authentication, Cloudinary, Next.js, React, API routes, build/runtime/lint errors, hydration, deployment, CRUD, realtime updates, admin dashboard, cart, contact form, AMC, image loading, environment variables, and related project issues.
+- `firestore.rules`: Firebase security rules; public users can read `products` and `categories`, admins can manage catalog/admin data, and public forms can create inquiry/AMC documents.
+- `firebase.json`: Firebase CLI config pointing Firestore rules deploys to `firestore.rules`.
+- `app/layout.js`: metadata, structured data, global providers, navbar, footer, WhatsApp floating button, toaster.
+- `app/page.js`: redesigned homepage with hero, 3D experience, services, PASS method, industries, timeline, featured products, testimonials, emergency CTA.
+- `app/products/page.js`: realtime product catalog, search/filter/sort, quick view, cards, cart and WhatsApp actions.
+- `app/products/[slug]/page.js`: product detail page backed by the shared realtime product listener.
+- `app/amc/page.js`: AMC booking page and form, writes to Firestore `amc_requests`, falls back to WhatsApp.
+- `app/contact/page.js`: contact page, map, FAQ, form, writes to Firestore `contact_enquiries`, falls back to WhatsApp.
+- `app/about/page.js`: corporate about page, values, milestones, industries, service coverage.
+- `app/velloreadmin/page.js`: protected admin dashboard, Google login, admin whitelist, product CRUD, Cloudinary upload, filters, pagination, bulk delete, delete confirmation.
+- `app/api/cloudinary-sign/route.js`: server route that signs Cloudinary uploads with `CLOUDINARY_API_SECRET`.
+- `app/robots.js`: generated robots policy; admin route is disallowed.
+- `app/sitemap.js`: generated sitemap for public routes.
+- `components/ui.js`: shared Section, Button, MetricCard, SkeletonGrid, and EmptyState primitives.
+- `components/Navbar.js`, `components/CartDrawer.js`, `components/Footer.js`, `components/WhatsAppFloat.js`: shared shell and contact surfaces.
+- `components/PassMethod.js`: static PASS training section.
+- `context/CartContext.js`: session cart state and WhatsApp inquiry message builder.
+- `hooks/useFirestoreProducts.js`: shared realtime Firestore product listener with loading/error/offline state.
+- `hooks/useReveal.js`: shared intersection reveal hook.
+- `lib/constants.js`: company constants, product categories, services, industries, admin emails, WhatsApp URL builder, and slug helper.
+- `lib/firebase.js`: Firebase initialization, env-var compatibility, admin email whitelist check.
+- `app/globals.css`: enterprise design-system tokens, typography, layout primitives, cards, buttons, forms, skeletons, admin inputs, animations, responsive rules.
+
+## Commands
+
+- Install: `npm install`
+- Dev server: `npm run dev`
+- Production build: `npm run build`
+- Start production build: `npm start`
+- Lint script exists as `npm run lint`, but Next 14 may require ESLint setup compatibility checks if it fails.
+
+## Environment And Secrets
+
+- `.env.local` is ignored by git. Do not commit secrets.
+- Firebase public config reads these first and falls back to the existing public config for compatibility:
+  - `NEXT_PUBLIC_FIREBASE_API_KEY`
+  - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+  - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+  - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+  - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+  - `NEXT_PUBLIC_FIREBASE_APP_ID`
+  - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
+- Cloudinary signed uploads use:
+  - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+  - `NEXT_PUBLIC_CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
+- Admin page falls back to existing public Cloudinary values for compatibility:
+  - cloud name: `dkrd0zooe`
+  - API key: `332133135685411`
+
+## Data Model
+
+- Firestore collections used by the app:
+  - `products`: `name`, `code`, `category`, `description`, `features`, `image`, `slug`, `featured`, `price`, `status`, `createdAt`, `updatedAt`.
+  - `contact_enquiries`: contact form payload plus `status`, `createdAt`.
+  - `amc_requests`: AMC form payload plus `status`, `createdAt`.
+- Product categories are centralized in `lib/constants.js`.
+- Product `features` is expected to be an array in public product cards; admin form accepts newline text and converts it to an array on save.
+- Product links resolve with `productSlug(product)` and route to `/products/[slug]`.
+
+## UI And Design Conventions
+
+- Visual style is premium dark fire-safety branding: near-black backgrounds, glass panels, gold gradients, red/fire accents, responsive enterprise layouts, high-contrast text.
+- Typography:
+  - Display: `Playfair Display`
+  - Body: `Barlow`
+  - Condensed/action labels: `Barlow Condensed`
+- Common CSS utilities/classes live in `app/globals.css`: `glass-panel`, `card-premium`, `product-card`, `product-media`, `input-premium`, `admin-input`, `text-gold-gradient`, `text-fire-gradient`, `btn`, `whatsapp-float`, `canvas-interactive`, `reveal`, `skeleton-card`.
+- Keep layouts responsive with `container-pro`, `container-wide`, `section-shell`, and mobile-first Tailwind classes.
+- Forms use explicit labels, accessible error text, `input-premium`/`admin-input`, toast feedback, Firestore write path, and WhatsApp fallback where applicable.
+- Prefer shared primitives from `components/ui.js` before adding new styling patterns.
+
+## Client/Server Rules
+
+- Pages/components using React state, effects, browser APIs, Firebase client SDK, or cart context need `'use client'`.
+- App Router metadata exports cannot be used from client components.
+- Dynamic imports with `ssr: false` are used for 3D/client-only sections.
+- API routes under `app/api` run server-side and can use server secrets.
+
+## 3D Notes
+
+- No 3D runtime assets remain in the public UI.
+- Keep the homepage and PASS section CSS-only so the interface stays fast and predictable.
+
+## Fixed Issues
+
+- Admin date displays now use `lib/dateUtils.js` so Firestore Timestamp, string, number, missing, or invalid date fields do not crash date-fns rendering.
+- Admin product/settings Cloudinary uploads now use the project Cloudinary env values/fallbacks and no-cache signing requests; product reads normalize common image URL fields into `product.image`.
+- `app/sitemap.js` no longer reads Firestore during build; sitemap now returns static public routes to avoid Firebase/grpc build warnings.
+- Firestore client hooks now use `getDocs` instead of realtime `onSnapshot` listeners to avoid Firebase 11.10 internal watch-stream assertion crashes in development.
+- Products created in `/velloreadmin` now appear on `/products`; the shared listener no longer excludes products missing `createdAt`, and the active admin writer saves slug/status/server timestamps.
+- Centralized development error logging now lives in `/errors.txt`; future fixes should update the matching log entry and mark resolved issues as `Fixed`.
+- Cart `RESTORE` now restores session cart state.
+- Product links now resolve through `/products/[slug]`.
+- Firebase config now supports environment variables with compatibility fallbacks.
+- Product categories are no longer duplicated across public/admin pages.
+- Admin dashboard now uses `next/image`; previous unused import is gone.
+- Ineffective AMC `_metadata` was removed.
+- Public pages and shared components were rewritten with encoding-safe text. README may still contain mojibake.
+
+## Coding Guidance For Future Agents
+
+- Before edits, run `git status --short` and inspect the files you will touch.
+- Use `/errors.txt` as the running development error log. Append new errors in chronological order, never overwrite previous entries, and keep the file UTF-8/plain text.
+- Every `/errors.txt` entry must use this structure:
+
+```text
+==================================================
+Date:
+Time:
+Page/Component:
+File:
+Operation:
+Error:
+Cause:
+Resolution:
+Status: Pending | Fixed
+==================================================
+```
+
+- When modifying code to fix an issue, update the matching `/errors.txt` entry with the root cause, files modified, attempted fix or final resolution, and status. Mark unresolved issues as `Pending` and resolved issues as `Fixed`.
+- Keep `/errors.txt` for development documentation only. Do not import it, route it, render it, or expose it to users.
+- Prefer existing constants, hooks, and UI primitives over introducing duplicated arrays or styling.
+- Keep customer contact details consistent:
+  - WhatsApp/primary phone: `918072264972` / `+91 80722 64972`
+  - Secondary phone: `+91 90874 05584`
+  - Email: `velloreenterprises7@gmail.com`
+  - Address: `164, Vellore Road, Kangeyanallur, Vellore, Tamil Nadu 632006`
+- If adding routes, use App Router conventions under `app/<route>/page.js`.
+- If adding shared UI, place it under `components/` and reuse design tokens from `app/globals.css`.
+- Keep Firestore writes resilient with WhatsApp fallback for public inquiry forms unless explicitly changing requirements.
+- Do not change admin authorization casually; current whitelist is `ADMIN_EMAILS` in `lib/constants.js`.
+- Update this `.agents` file whenever you add a new route, collection, env var, command, major dependency, or important known issue.
+
+## Suggested Verification
+
+- For UI/content changes: run `npm run build` at minimum.
+- For 3D changes: run the dev server and visually check home page desktop and mobile.
+- For Firebase/contact changes: verify both configured Firebase write path and fallback WhatsApp message path where possible.
+- For admin changes: verify unauthenticated login screen, authorized admin flow, product add/edit/delete, pagination, bulk delete, and Cloudinary upload signature behavior.
+- For cart changes: verify add, quantity update, remove, clear, session persistence, product links, and generated WhatsApp message.

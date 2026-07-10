@@ -1,168 +1,255 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { COMPANY, PRODUCT_CATEGORIES, CATEGORY_ICONS } from '@/lib/constants';
 import CartDrawer from './CartDrawer';
 
 const navLinks = [
   { label: 'Home', href: '/' },
-  { label: 'Products', href: '/products' },
-  { label: 'AMC Request', href: '/amc' },
-  { label: 'About Us', href: '/about' },
+  { label: 'Products', href: '/products', hasMega: true },
+  { label: 'AMC', href: '/amc' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
 
+function BrandMark() {
+  return (
+    <span className="flex items-center gap-3">
+      <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#f5d76e] via-[#c9a227] to-[#8b6914] text-black shadow-[0_0_34px_rgba(201,162,39,.25)]">
+        <span className="absolute inset-px rounded-[15px] bg-[radial-gradient(circle_at_30%_20%,#fff5bc,transparent_38%),linear-gradient(135deg,#c9a227,#7f1809)]" />
+        <span className="relative font-condensed text-sm font-black tracking-wider">VE</span>
+      </span>
+      <span className="leading-none">
+        <span className="block font-condensed text-lg font-black tracking-[0.18em] text-white">VELLORE</span>
+        <span className="block font-condensed text-[10px] font-semibold tracking-[0.34em] text-[#f5d76e]">ENTERPRISES</span>
+      </span>
+    </span>
+  );
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
+  const lastScrollY = useRef(0);
   const pathname = usePathname();
   const { totalItems } = useCart();
+  const megaTimeout = useRef(null);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+  const handleScroll = useCallback(() => {
+    const y = window.scrollY;
+    setScrolled(y > 16);
+    if (y > 200) {
+      setHidden(y > lastScrollY.current && y > 100);
+    } else {
+      setHidden(false);
+    }
+    lastScrollY.current = y;
   }, []);
 
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => {
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setMegaOpen(false);
+  }, [pathname]);
+
+  const openMega = () => {
+    clearTimeout(megaTimeout.current);
+    setMegaOpen(true);
+  };
+
+  const closeMega = () => {
+    megaTimeout.current = setTimeout(() => setMegaOpen(false), 200);
+  };
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? 'bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[rgba(201,162,39,0.15)] shadow-[0_4px_30px_rgba(0,0,0,0.8)]'
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
+          hidden && !menuOpen ? '-translate-y-full' : 'translate-y-0'
+        } ${
+          scrolled || menuOpen
+            ? 'border-b border-white/10 bg-[#050505]/88 shadow-[0_18px_70px_rgba(0,0,0,.45)] backdrop-blur-2xl'
             : 'bg-transparent'
         }`}
-        role="navigation"
-        aria-label="Main navigation"
+        aria-label="Primary navigation"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18 py-3">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group" aria-label="Vellore Enterprises Home">
-              <div className="relative w-10 h-10 flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227] to-[#8B6914] rounded-full opacity-90 group-hover:opacity-100 transition-opacity" />
-                <svg viewBox="0 0 40 40" className="relative z-10 w-10 h-10" fill="none" aria-hidden="true">
-                  <circle cx="20" cy="20" r="20" fill="url(#logoGrad)" />
-                  <path d="M20 8 C20 8 14 14 14 20 C14 23.3 16.7 26 20 26 C23.3 26 26 23.3 26 20 C26 14 20 8 20 8Z" fill="white" opacity="0.9"/>
-                  <path d="M20 14 C20 14 17 17 17 20 C17 21.7 18.3 23 20 23 C21.7 23 23 21.7 23 20 C23 17 20 14 20 14Z" fill="#FF6600"/>
-                  <defs>
-                    <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
-                      <stop offset="0%" stopColor="#C9A227"/>
-                      <stop offset="100%" stopColor="#8B6914"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="font-condensed font-800 text-lg tracking-widest text-white group-hover:text-[#C9A227] transition-colors" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, letterSpacing: '0.15em' }}>
-                  VELLORE
-                </span>
-                <span className="text-[9px] tracking-[0.35em] text-[#C9A227] font-medium" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  ENTERPRISES
-                </span>
-              </div>
+        <div className="container-wide">
+          <div className="flex h-[76px] items-center justify-between gap-4">
+            <Link href="/" aria-label={`${COMPANY.name} home`} className="shrink-0">
+              <BrandMark />
             </Link>
 
-            {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-4 py-2 text-sm font-medium tracking-wider transition-all duration-300 relative group ${
-                    pathname === link.href
-                      ? 'text-[#C9A227]'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-                >
-                  {link.label.toUpperCase()}
-                  <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-px bg-[#C9A227] transition-all duration-300 ${
-                    pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`} />
-                </Link>
-              ))}
+            {/* Desktop Nav */}
+            <div className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] p-1 lg:flex">
+              {navLinks.map((link) => {
+                const active = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+                return (
+                  <div
+                    key={link.href}
+                    className="relative"
+                    onMouseEnter={link.hasMega ? openMega : undefined}
+                    onMouseLeave={link.hasMega ? closeMega : undefined}
+                  >
+                    <Link
+                      href={link.href}
+                      className={`relative rounded-full px-4 py-2 font-condensed text-sm font-bold tracking-[0.12em] transition flex items-center gap-1 ${
+                        active ? 'bg-white/10 text-[#f5d76e]' : 'text-white/68 hover:bg-white/[0.06] hover:text-white'
+                      }`}
+                    >
+                      {link.label.toUpperCase()}
+                      {link.hasMega && (
+                        <svg className={`w-3 h-3 transition-transform ${megaOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-3">
-              {/* Cart button */}
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              {/* Search trigger */}
               <button
-                onClick={() => setCartOpen(true)}
-                className="relative p-2 text-gray-400 hover:text-[#C9A227] transition-colors"
-                aria-label={`Shopping cart, ${totalItems} items`}
+                type="button"
+                onClick={() => {
+                  const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true });
+                  window.dispatchEvent(event);
+                }}
+                className="hidden sm:grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/55 transition hover:border-[#c9a227]/50 hover:text-[#f5d76e]"
+                aria-label="Open search (Ctrl+K)"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </button>
+
+              {/* Cart */}
+              <button
+                type="button"
+                onClick={() => setCartOpen(true)}
+                className="relative grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/75 transition hover:border-[#c9a227]/50 hover:text-[#f5d76e]"
+                aria-label={`Open inquiry cart, ${totalItems} items`}
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M3 4h2l2.2 10.4a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 7H6.2M10 20a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
                 </svg>
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#C9A227] text-black text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#f5d76e] px-1 text-xs font-black text-black">
                     {totalItems}
                   </span>
                 )}
               </button>
 
-              {/* CTA button */}
-              <a
-                href="tel:+918072264972"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black text-sm font-bold rounded-none hover:from-[#F5D76E] hover:to-[#C9A227] transition-all duration-300 btn-shimmer"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                </svg>
-                CALL NOW
+              <a href={`tel:${COMPANY.phoneHref}`} className="btn btn-primary btn-sm hidden sm:inline-flex">
+                Call now
               </a>
 
-              {/* Mobile menu button */}
+              {/* Mobile Toggle */}
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white lg:hidden"
                 aria-expanded={menuOpen}
-                aria-label="Toggle mobile menu"
+                aria-label="Toggle mobile navigation"
               >
-                <div className="w-6 h-5 flex flex-col justify-between">
-                  <span className={`block h-px bg-current transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2.5' : ''}`} />
-                  <span className={`block h-px bg-current transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-                  <span className={`block h-px bg-current transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-                </div>
+                <span className="relative h-4 w-5">
+                  <span className={`absolute left-0 top-0 h-px w-5 bg-current transition ${menuOpen ? 'translate-y-2 rotate-45' : ''}`} />
+                  <span className={`absolute left-0 top-2 h-px w-5 bg-current transition ${menuOpen ? 'opacity-0' : ''}`} />
+                  <span className={`absolute left-0 top-4 h-px w-5 bg-current transition ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+                </span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mega Menu Dropdown */}
         <div
-          className={`lg:hidden transition-all duration-400 overflow-hidden mobile-menu-backdrop bg-[#0a0a0a]/98 border-b border-[rgba(201,162,39,0.15)] ${
-            menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`mega-menu ${megaOpen ? 'mega-menu-open' : ''}`}
+          onMouseEnter={openMega}
+          onMouseLeave={closeMega}
         >
-          <div className="px-4 py-6 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block px-4 py-3 text-sm font-medium tracking-widest transition-all duration-200 border-l-2 ${
-                  pathname === link.href
-                    ? 'text-[#C9A227] border-[#C9A227] bg-[rgba(201,162,39,0.05)]'
-                    : 'text-gray-300 border-transparent hover:text-white hover:border-[#C9A227] hover:bg-[rgba(201,162,39,0.03)]'
-                }`}
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}
-              >
-                {link.label.toUpperCase()}
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-[rgba(201,162,39,0.1)]">
-              <a
-                href="tel:+918072264972"
-                className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black font-bold text-sm tracking-widest"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-              >
-                📞 +91 80722 64972
+          <div className="container-wide py-8">
+            <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+              <div>
+                <p className="eyebrow mb-4">Product categories</p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat}
+                      href={`/products?category=${encodeURIComponent(cat)}`}
+                      className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-4 transition hover:border-[#c9a227]/40 hover:bg-[#c9a227]/5 group"
+                    >
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#c9a227]/12 font-condensed font-bold text-[#f5d76e] text-sm shrink-0">
+                        {CATEGORY_ICONS[cat] || cat.slice(0, 2)}
+                      </span>
+                      <span className="font-semibold text-sm text-white/70 group-hover:text-[#f5d76e] transition-colors">
+                        {cat}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div className="glass-panel p-5">
+                <p className="eyebrow mb-3">Quick actions</p>
+                <div className="space-y-2">
+                  <Link href="/products" className="block rounded-xl p-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-[#f5d76e] transition">
+                    View all products
+                  </Link>
+                  <Link href="/amc" className="block rounded-xl p-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-[#f5d76e] transition">
+                    Request AMC quote
+                  </Link>
+                  <Link href="/contact" className="block rounded-xl p-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-[#f5d76e] transition">
+                    Contact our team
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <div className={`lg:hidden ${menuOpen ? 'block' : 'hidden'}`}>
+          <div className="container-wide pb-5">
+            <div className="glass-panel p-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block rounded-2xl px-4 py-3 font-condensed text-sm font-bold tracking-[0.16em] ${
+                    pathname === link.href ? 'bg-white/10 text-[#f5d76e]' : 'text-white/72'
+                  }`}
+                >
+                  {link.label.toUpperCase()}
+                </Link>
+              ))}
+              {/* Mobile category links */}
+              <div className="mt-2 border-t border-white/10 pt-2">
+                <p className="px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/30 font-condensed font-bold">Categories</p>
+                {PRODUCT_CATEGORIES.map((cat) => (
+                  <Link
+                    key={cat}
+                    href={`/products?category=${encodeURIComponent(cat)}`}
+                    className="block rounded-2xl px-4 py-2 text-sm text-white/55 hover:text-[#f5d76e]"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+              <a href={`tel:${COMPANY.phoneHref}`} className="btn btn-primary mt-2 w-full">
+                {COMPANY.phoneDisplay}
               </a>
             </div>
           </div>

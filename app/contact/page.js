@@ -1,32 +1,50 @@
 'use client';
+
 import { useState } from 'react';
-import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
+import { db } from '@/lib/firebase';
+import { COMPANY, buildWhatsAppUrl } from '@/lib/constants';
+import { Button } from '@/components/ui';
+
+const initial = { name: '', phone: '', email: '', subject: '', message: '' };
+const faqs = [
+  ['How quickly do you respond?', 'Most enquiries receive a response within two business hours. Emergency support is available by phone.'],
+  ['Do forms work without Firebase?', 'Yes. If Firestore is unavailable, the form opens a prepared WhatsApp message.'],
+  ['Do you visit sites?', 'Yes. We provide site surveys and recommend equipment, installation, and AMC plans.'],
+];
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', phone: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState(initial);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const update = (event) => setForm((value) => ({ ...value, [event.target.name]: event.target.value }));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.name || !form.phone || !form.message) {
-      toast.error('Please fill in required fields.');
-      return;
-    }
+  const validate = () => {
+    const next = {};
+    if (!form.name.trim()) next.name = 'Name is required';
+    if (!form.phone.trim()) next.phone = 'Phone is required';
+    if (!form.message.trim()) next.message = 'Message is required';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!validate()) return;
     setSubmitting(true);
     try {
       await addDoc(collection(db, 'contact_enquiries'), { ...form, status: 'new', createdAt: serverTimestamp() });
       setSubmitted(true);
-      toast.success('Message sent! We will contact you shortly.');
+      setForm(initial);
+      toast.success('Message sent. We will contact you shortly.');
     } catch {
-      const msg = `Hello Vellore Enterprises,\n\nNew Contact Enquiry:\n\nName: ${form.name}\nPhone: ${form.phone}\nEmail: ${form.email}\nSubject: ${form.subject}\nMessage: ${form.message}`;
-      window.open(`https://wa.me/918072264972?text=${encodeURIComponent(msg)}`, '_blank');
+      const message = `Hello Vellore Enterprises,\n\nNew contact enquiry:\n\nName: ${form.name}\nPhone: ${form.phone}\nEmail: ${form.email}\nSubject: ${form.subject}\nMessage: ${form.message}`;
+      window.open(buildWhatsAppUrl(message), '_blank');
       setSubmitted(true);
-      toast.success('Redirecting to WhatsApp...');
+      toast.success('Opening WhatsApp fallback.');
     } finally {
       setSubmitting(false);
     }
@@ -34,121 +52,95 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="pt-28 pb-16 bg-[#0d0d0d] border-b border-[rgba(201,162,39,0.1)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs tracking-[0.4em] text-[#C9A227] uppercase mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-            Get In Touch
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Contact <span className="text-gold-gradient">Us</span>
-          </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Have a question or need a fire safety solution? Reach out to us — we respond within 2 hours.
-          </p>
+      <section className="hero-shell min-h-[70svh]">
+        <div className="container-pro pt-16 text-center">
+          <p className="eyebrow">Contact</p>
+          <h1 className="heading-xl">Talk to a fire safety specialist.</h1>
+          <p className="lead-copy mx-auto mt-6 max-w-3xl">Send a message, call directly, or reach us on WhatsApp for products, AMC, site surveys, and emergency fire safety support.</p>
         </div>
       </section>
 
-      <section className="py-20 bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Contact Info */}
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Let's <span className="text-gold-gradient">Talk</span>
-              </h2>
-              <div className="space-y-6 mb-10">
-                {[
-                  { icon: '📍', title: 'Address', lines: ['164, Vellore Road, Kangeyanallur,', 'Vellore, Tamil Nadu – 632006'] },
-                  { icon: '📞', title: 'Phone', lines: ['+91 80722 64972', '+91 90874 05584'] },
-                  { icon: '✉️', title: 'Email', lines: ['velloreenterprises7@gmail.com'] },
-                  { icon: '🕐', title: 'Hours', lines: ['Mon – Sat: 9:00 AM – 6:00 PM', '24/7 Emergency Support Available'] },
-                ].map(item => (
-                  <div key={item.title} className="flex gap-4 p-5 border border-[rgba(201,162,39,0.1)] hover:border-[rgba(201,162,39,0.3)] transition-colors">
-                    <span className="text-2xl flex-shrink-0" aria-hidden="true">{item.icon}</span>
-                    <div>
-                      <h3 className="text-[#C9A227] font-bold text-sm mb-1 uppercase tracking-wider" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{item.title}</h3>
-                      {item.lines.map((l, i) => <p key={i} className="text-gray-400 text-sm">{l}</p>)}
-                    </div>
-                  </div>
-                ))}
+      <section className="section-shell pt-0">
+        <div className="container-wide grid gap-8 lg:grid-cols-[.9fr_1.1fr]">
+          <div className="space-y-5">
+            {[
+              ['Address', `${COMPANY.addressLine}, ${COMPANY.cityLine}`],
+              ['Phone', `${COMPANY.phoneDisplay} / ${COMPANY.secondaryPhoneDisplay}`],
+              ['Email', COMPANY.email],
+              ['Hours', `${COMPANY.hours}. Emergency support available.`],
+            ].map(([label, value]) => (
+              <div key={label} className="card-premium p-6">
+                <p className="eyebrow mb-2">{label}</p>
+                <p className="text-lg leading-7 text-white/70">{value}</p>
               </div>
-              <a
-                href="https://wa.me/918072264972"
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold tracking-wider transition-all duration-300 btn-shimmer"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.1em' }}
-              >
-                💬 CHAT ON WHATSAPP
-              </a>
+            ))}
+            <div className="glass-panel overflow-hidden">
+              <iframe
+                title="Vellore Enterprises map"
+                src="https://www.google.com/maps?q=Kangeyanallur%20Vellore%20Tamil%20Nadu%20632006&output=embed"
+                className="h-72 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
+          </div>
 
-            {/* Form */}
-            <div>
-              {submitted ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-10 border border-[rgba(201,162,39,0.2)] bg-[rgba(201,162,39,0.03)]">
-                  <div className="text-6xl mb-6" aria-hidden="true">✅</div>
-                  <h2 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Message Received!</h2>
-                  <p className="text-gray-400 mb-6">Our team will get back to you within 2 hours.</p>
-                  <a href="tel:+918072264972" className="px-6 py-3 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black font-bold tracking-wider" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    CALL: +91 80722 64972
-                  </a>
+          <div className="form-panel p-6 md:p-8">
+            {submitted ? (
+              <div className="grid min-h-[520px] place-items-center text-center">
+                <div>
+                  <div className="empty-orb">OK</div>
+                  <h2 className="font-display text-3xl font-bold">Message received</h2>
+                  <p className="mx-auto mt-3 max-w-md text-white/58">Our team will respond soon. For urgent requirements, call directly.</p>
+                  <Button href={`tel:${COMPANY.phoneHref}`} className="mt-7">Call now</Button>
                 </div>
-              ) : (
-                <div className="border border-[rgba(201,162,39,0.15)] p-8 bg-[#111]">
-                  <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Send a Message</h2>
-                  <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label htmlFor="name" className="block text-xs text-gray-400 mb-2 tracking-wider uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                          Name <span className="text-[#C9A227]">*</span>
-                        </label>
-                        <input id="name" name="name" type="text" required value={form.name} onChange={handleChange}
-                          className="input-premium w-full px-4 py-3 text-sm" placeholder="Your name" />
-                      </div>
-                      <div>
-                        <label htmlFor="phone" className="block text-xs text-gray-400 mb-2 tracking-wider uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                          Phone <span className="text-[#C9A227]">*</span>
-                        </label>
-                        <input id="phone" name="phone" type="tel" required value={form.phone} onChange={handleChange}
-                          className="input-premium w-full px-4 py-3 text-sm" placeholder="+91 XXXXX XXXXX" />
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-xs text-gray-400 mb-2 tracking-wider uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                        Email
-                      </label>
-                      <input id="email" name="email" type="email" value={form.email} onChange={handleChange}
-                        className="input-premium w-full px-4 py-3 text-sm" placeholder="your@email.com" />
-                    </div>
-                    <div>
-                      <label htmlFor="subject" className="block text-xs text-gray-400 mb-2 tracking-wider uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                        Subject
-                      </label>
-                      <input id="subject" name="subject" type="text" value={form.subject} onChange={handleChange}
-                        className="input-premium w-full px-4 py-3 text-sm" placeholder="How can we help?" />
-                    </div>
-                    <div>
-                      <label htmlFor="message" className="block text-xs text-gray-400 mb-2 tracking-wider uppercase" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                        Message <span className="text-[#C9A227]">*</span>
-                      </label>
-                      <textarea id="message" name="message" rows={5} required value={form.message} onChange={handleChange}
-                        className="input-premium w-full px-4 py-3 text-sm resize-none" placeholder="Tell us about your fire safety requirements..." />
-                    </div>
-                    <button type="submit" disabled={submitting}
-                      className="w-full py-4 bg-gradient-to-r from-[#C9A227] to-[#8B6914] text-black font-bold tracking-widest hover:from-[#F5D76E] hover:to-[#C9A227] transition-all duration-300 btn-shimmer disabled:opacity-50"
-                      style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}>
-                      {submitting ? 'SENDING...' : 'SEND MESSAGE'}
-                    </button>
-                    <p className="text-xs text-gray-600 text-center">
-                      Or call us: <a href="tel:+918072264972" className="text-[#C9A227] hover:underline">+91 80722 64972</a>
-                    </p>
-                  </form>
+              </div>
+            ) : (
+              <form onSubmit={submit} className="grid gap-5" noValidate>
+                <div>
+                  <p className="eyebrow">Enquiry form</p>
+                  <h2 className="font-display text-3xl font-bold">Send your requirement</h2>
                 </div>
-              )}
-            </div>
+                <Field label="Name" name="name" value={form.name} onChange={update} error={errors.name} required />
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Phone" name="phone" type="tel" value={form.phone} onChange={update} error={errors.phone} required />
+                  <Field label="Email" name="email" type="email" value={form.email} onChange={update} />
+                </div>
+                <Field label="Subject" name="subject" value={form.subject} onChange={update} />
+                <Field label="Message" name="message" value={form.message} onChange={update} error={errors.message} textarea required />
+                <Button type="submit" disabled={submitting}>{submitting ? 'Sending...' : 'Send message'}</Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell bg-[#070707]">
+        <div className="container-pro">
+          <div className="section-heading">
+            <p className="eyebrow">FAQ</p>
+            <h2 className="heading-md">Common contact questions</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {faqs.map(([q, a]) => <div key={q} className="card-premium p-6"><h3 className="font-display text-xl font-bold">{q}</h3><p className="mt-3 text-sm leading-6 text-white/58">{a}</p></div>)}
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+function Field({ label, name, value, onChange, error, textarea = false, type = 'text', required = false }) {
+  const id = `contact-${name}`;
+  return (
+    <div>
+      <label htmlFor={id} className="admin-label">{label} {required && <span className="text-[#f5d76e]">*</span>}</label>
+      {textarea ? (
+        <textarea id={id} name={name} rows={5} value={value} onChange={onChange} className="input-premium resize-none" aria-invalid={Boolean(error)} />
+      ) : (
+        <input id={id} name={name} type={type} value={value} onChange={onChange} className="input-premium" aria-invalid={Boolean(error)} />
+      )}
+      {error && <p className="mt-2 text-sm text-[#ffb199]">{error}</p>}
+    </div>
   );
 }

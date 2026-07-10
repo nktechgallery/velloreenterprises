@@ -1,17 +1,23 @@
 import './globals.css';
-import { Toaster } from 'react-hot-toast';
+import ToasterProvider from '@/components/ToasterProvider';
 import { CartProvider } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+// import ErrorBoundary from '@/components/ErrorBoundary';
+import dynamic from 'next/dynamic';
+import { COMPANY, SERVICES } from '@/lib/constants';
+
+import CommandPalette from '@/components/CommandPalette';
 
 export const metadata = {
-  metadataBase: new URL('https://www.velloreenterprises.in'),
+  metadataBase: new URL(COMPANY.domain),
   title: {
-    default: 'Vellore Enterprises | Fire Safety Solutions in Vellore, Tamil Nadu',
-    template: '%s | Vellore Enterprises',
+    default: `${COMPANY.name} | Fire Safety Solutions in Vellore`,
+    template: `%s | ${COMPANY.name}`,
   },
-  description: 'Vellore Enterprises – Your trusted fire safety partner in Vellore. Expert fire extinguisher supply, fire alarm systems, fire hydrant systems, AMC services & fire safety audits. Call +91 80722 64972.',
+  description:
+    'Premium fire safety solutions in Vellore and Tamil Nadu: fire extinguishers, alarm systems, hydrants, suppression systems, AMC services, audits, and emergency support.',
   keywords: [
     'fire safety company in Vellore',
     'fire extinguisher supplier Vellore',
@@ -21,29 +27,92 @@ export const metadata = {
     'fire suppression systems Tamil Nadu',
     'fire hydrant system Vellore',
     'fire safety audit Vellore',
-    'Vellore Enterprises fire safety',
   ],
-  authors: [{ name: 'Vellore Enterprises' }],
-  creator: 'Vellore Enterprises',
-  publisher: 'Vellore Enterprises',
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  authors: [{ name: COMPANY.name }],
+  creator: COMPANY.name,
+  publisher: COMPANY.name,
+  alternates: { canonical: COMPANY.domain },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://www.velloreenterprises.in',
-    siteName: 'Vellore Enterprises',
-    title: 'Vellore Enterprises | Premium Fire Safety Solutions',
-    description: 'Your trusted fire safety partner in Vellore, Tamil Nadu. Fire extinguishers, alarm systems, hydrant systems, AMC services and more.',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Vellore Enterprises Fire Safety' }],
+    url: COMPANY.domain,
+    siteName: COMPANY.name,
+    title: `${COMPANY.name} | Premium Fire Safety Solutions`,
+    description: 'Certified fire protection equipment, installations, AMC and audits for modern facilities across Tamil Nadu.',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: `${COMPANY.name} fire safety solutions` }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vellore Enterprises | Fire Safety Solutions',
-    description: 'Your trusted fire safety partner in Vellore, Tamil Nadu.',
+    title: `${COMPANY.name} | Fire Safety Solutions`,
+    description: 'Fire protection products, AMC and emergency support in Vellore, Tamil Nadu.',
     images: ['/og-image.jpg'],
   },
-  alternates: { canonical: 'https://www.velloreenterprises.in' },
-  verification: { google: 'your-google-verification-code' },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: COMPANY.name,
+  description: 'Fire safety and fire protection solutions company in Vellore, Tamil Nadu.',
+  url: COMPANY.domain,
+  telephone: COMPANY.phoneHref,
+  email: COMPANY.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: COMPANY.addressLine,
+    addressLocality: 'Vellore',
+    addressRegion: 'Tamil Nadu',
+    postalCode: '632006',
+    addressCountry: 'IN',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: 12.9165, longitude: 79.1325 },
+  openingHours: 'Mo-Sa 09:00-18:00',
+  priceRange: 'INR',
+  image: `${COMPANY.domain}/og-image.jpg`,
+  sameAs: [COMPANY.instagram],
+  makesOffer: SERVICES.map((service) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: service } })),
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What types of fire safety equipment do you supply?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'We supply fire extinguishers (CO2, ABC, foam, water), fire alarm systems, hydrant networks, suppression systems, fire stop solutions, and safety gear from certified manufacturers.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do you provide installation services?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. We offer end-to-end installation for fire alarm systems, hydrant networks, suppression systems, and all related fire safety infrastructure.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What areas do you serve?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'We primarily serve Vellore, Kangeyanallur, and surrounding areas in Tamil Nadu. For larger projects, we extend coverage across Tamil Nadu.',
+      },
+    },
+  ],
 };
 
 export default function RootLayout({ children }) {
@@ -53,48 +122,26 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#0a0a0a" />
+        <meta name="theme-color" content="#050505" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'LocalBusiness',
-              name: 'Vellore Enterprises',
-              description: 'Fire safety and fire protection solutions company in Vellore, Tamil Nadu.',
-              url: 'https://www.velloreenterprises.in',
-              telephone: '+918072264972',
-              email: 'velloreenterprises7@gmail.com',
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: '164, Vellore Road, Kangeyanallur',
-                addressLocality: 'Vellore',
-                addressRegion: 'Tamil Nadu',
-                postalCode: '632006',
-                addressCountry: 'IN',
-              },
-              geo: { '@type': 'GeoCoordinates', latitude: 12.9165, longitude: 79.1325 },
-              openingHours: 'Mo-Sa 09:00-18:00',
-              priceRange: '₹₹',
-              image: 'https://www.velloreenterprises.in/og-image.jpg',
-              sameAs: ['https://www.instagram.com/vellore_enterprises'],
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       </head>
-      <body className="bg-dark-900 text-white antialiased">
+      <body className="noise-layer">
+        <a href="#main-content" className="skip-to-content">Skip to content</a>
         <CartProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <WhatsAppFloat />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: { background: '#1a1a1a', color: '#f5f5f5', border: '1px solid rgba(201,162,39,0.3)' },
-              success: { iconTheme: { primary: '#C9A227', secondary: '#0a0a0a' } },
-            }}
-          />
+          <div className="layout-boundary">
+            <Navbar />
+            <main id="main-content">{children}</main>
+            <Footer />
+            <WhatsAppFloat />
+          </div>
+          <ToasterProvider />
         </CartProvider>
       </body>
     </html>

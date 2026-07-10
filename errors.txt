@@ -1,0 +1,479 @@
+==================================================
+Date:
+2026-07-09
+
+Time:
+17:42 IST
+
+Page/Component:
+Project Documentation
+
+File:
+errors.txt
+.agents
+
+Operation:
+Centralized Development Error Logging Setup
+
+Error:
+Project did not have a centralized development error log file or contributor instructions for logging project errors.
+
+Cause:
+The project documentation did not yet define a persistent error logging convention for Firebase, Firestore, Authentication, Cloudinary, Next.js, React, API routes, build failures, runtime errors, linting, hydration, deployment, CRUD, realtime updates, admin dashboard, cart, contact form, AMC, image loading, environment variables, and related development issues.
+
+Resolution:
+Created /errors.txt with the required entry format.
+Updated .agents with the purpose, scope, conventions, and contributor workflow for maintaining /errors.txt.
+Future fixes must append new errors chronologically, preserve previous entries, document attempted fixes, and update matching entries with root cause, files modified, resolution, and final status.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+08:09 IST
+
+Page/Component:
+Next.js Development Server and Public Manifest
+
+File:
+public/manifest.json
+errors.txt
+
+Operation:
+Development server chunk loading after product catalog changes
+
+Error:
+Next.js dev server returned 404 for _next/static chunks such as app/products/page.js, app/layout.js, app-pages-internals.js, main-app.js, app/error.js, and app/not-found.js. Browser also requested /manifest.json and received 404.
+
+Cause:
+The running dev server was serving HTML that referenced stale chunk paths after code changes and cache churn. The generated .next cache was stale/corrupted, and public/manifest.json did not exist even though app/layout.js referenced it.
+
+Resolution:
+Stopped the stale Node dev process.
+Deleted the generated .next cache after verifying the target path was inside the project workspace.
+Added public/manifest.json.
+Ran npm run build successfully.
+Restarted the dev server cleanly on port 3000.
+Files modified: public/manifest.json, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+08:06 IST
+
+Page/Component:
+Public Products Catalog and Cart Flow
+
+File:
+app/products/page.js
+app/globals.css
+errors.txt
+
+Operation:
+Ecommerce-style product grid with cart and WhatsApp actions
+
+Error:
+/products needed a grid ecommerce experience with Add to cart, Buy now, cart summary, and final WhatsApp inquiry flow.
+
+Cause:
+Product cards were implemented as full-card links, so there was no direct ecommerce action surface for cart or buy-now behavior on the catalog grid.
+
+Resolution:
+Rebuilt /products as ecommerce-style cards with separate product image/details links, Add to cart, Buy now, and View details actions.
+Integrated Add to cart with the existing CartContext and navbar/cart drawer.
+Added a sticky cart summary on /products with a Send cart on WhatsApp action.
+Added a direct single-product Buy now WhatsApp inquiry action.
+Added CSS safeguards for grid/list product card layouts and action buttons.
+Files modified: app/products/page.js, app/globals.css, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+07:51 IST
+
+Page/Component:
+Admin Products, Admin Categories, Public Products, Select Inputs
+
+File:
+app/globals.css
+hooks/useFirestoreCategories.js
+components/admin/ProductsTab.js
+components/admin/CategoriesTab.js
+components/admin/AMCTab.js
+components/admin/InquiriesTab.js
+app/products/page.js
+app/amc/page.js
+errors.txt
+
+Operation:
+Select menu UI and custom category creation/sync
+
+Error:
+Select option menus had poor UI/contrast behavior.
+Custom category management needed to ensure new categories appear in both /velloreadmin product forms and the public /products category filters.
+
+Cause:
+Native select elements inherited dark form styling but option menus did not have explicit option colors/backgrounds.
+The category hook replaced default categories when Firestore categories existed, instead of merging defaults with custom database categories.
+Product creation did not provide an inline way to add a new category while adding a product.
+
+Resolution:
+Added select-premium/global select option styling for readable native dropdown menus.
+Updated useFirestoreCategories to merge default categories with custom Firestore categories and de-duplicate by name.
+Added quick custom category creation inside the admin product form. Newly added categories are written to Firestore, selected immediately, and refreshed across admin/public category consumers.
+Updated category create ordering to use the full merged category length.
+Files modified: app/globals.css, hooks/useFirestoreCategories.js, components/admin/ProductsTab.js, components/admin/CategoriesTab.js, components/admin/AMCTab.js, components/admin/InquiriesTab.js, app/products/page.js, app/amc/page.js, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+02:11 IST
+
+Page/Component:
+Public Products Catalog
+
+File:
+firestore.rules
+firebase.json
+.agents
+errors.txt
+
+Operation:
+Firestore security rules for public product reads
+
+Error:
+/products page displayed "Products could not load - Missing or insufficient permissions."
+
+Cause:
+Firestore security rules are denying unauthenticated reads from the products collection. The public catalog uses the client Firebase SDK, so products cannot appear on /products unless deployed Firestore rules allow public read access to products.
+
+Resolution:
+Added firestore.rules with public read access for products and categories, admin-only writes for catalog/admin collections, and public create access for contact/AMC inquiry collections.
+Added firebase.json so Firebase CLI rule deploys use firestore.rules.
+Firebase Console or Firebase CLI deployment is still required before the permission change affects the live Firestore backend.
+Files modified: firestore.rules, firebase.json, .agents, errors.txt.
+
+Status:
+Pending
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+07:47 IST
+
+Page/Component:
+Admin Dashboard, AMC Tab, Inquiries Tab, Product Images
+
+File:
+lib/dateUtils.js
+hooks/useFirestoreProducts.js
+hooks/useFirestoreAMC.js
+hooks/useFirestoreInquiries.js
+hooks/useActivityLogs.js
+components/admin/AMCTab.js
+components/admin/InquiriesTab.js
+components/admin/DashboardTab.js
+components/admin/ProductsTab.js
+components/admin/CategoriesTab.js
+components/admin/SettingsTab.js
+app/products/page.js
+app/products/[slug]/page.js
+.agents
+errors.txt
+
+Operation:
+Admin panel runtime stability and product image upload/display
+
+Error:
+RangeError: Invalid time value in AMCTab when rendering createdAt with formatDistanceToNow(new Date(req.createdAt)).
+Product images uploaded from the admin panel were not displaying reliably on the public products page.
+Admin panel lists did not always refresh after mutations after realtime listeners were removed.
+
+Cause:
+Firestore date fields can be Timestamp objects, ISO strings, numbers, missing values, or invalid legacy values. Directly passing these through new Date(...) can create Invalid Date and crash date-fns.
+The active admin product/settings upload helpers used stale fallback Cloudinary credentials that did not match the project configuration.
+After replacing realtime listeners with getDocs reads, category mutations needed explicit refresh triggers.
+
+Resolution:
+Added lib/dateUtils.js with safe toDate, timeAgo, and timestampValue helpers.
+Updated admin AMC, inquiries, and dashboard activity rendering to use safe timeAgo formatting.
+Updated Firestore hooks to share safe timestamp sorting.
+Normalized product image fields from Firestore into product.image.
+Updated product and settings image uploads to use the correct Cloudinary env values/fallbacks and no-cache signing requests.
+Added refresh triggers after category create/update/delete/migration.
+Added graceful image error handling on public product cards and detail related products.
+Files modified: lib/dateUtils.js, hooks/useFirestoreProducts.js, hooks/useFirestoreAMC.js, hooks/useFirestoreInquiries.js, hooks/useActivityLogs.js, components/admin/AMCTab.js, components/admin/InquiriesTab.js, components/admin/DashboardTab.js, components/admin/ProductsTab.js, components/admin/CategoriesTab.js, components/admin/SettingsTab.js, app/products/page.js, app/products/[slug]/page.js, .agents, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-09
+
+Time:
+17:46 IST
+
+Page/Component:
+Admin Product Editor
+
+File:
+app/velloreadmin/page.js
+app/api/cloudinary-sign/route.js
+errors.txt
+
+Operation:
+Cloudinary signed product image upload during product create/save
+
+Error:
+Stale request - reported time is 2026-07-09 12:14:33 +0000 which is more than 1 hour ago.
+
+Cause:
+Cloudinary rejected the signed upload timestamp before Firestore product creation could complete. The signing route generates a fresh timestamp, so the most likely development causes are local/dev-server clock drift, a stale signing response, or an admin page/dev server session left open after configuration changes.
+
+Resolution:
+Updated the Cloudinary signing API response with stronger no-store CDN headers and returned serverTime for debugging.
+Updated the admin Cloudinary upload fetch to use cache: no-store, no-cache headers, and a timestamp cache buster.
+Added a one-time retry when Cloudinary reports a stale signature.
+Improved the stale-signature message to instruct syncing the computer clock, restarting the dev server, refreshing the admin page, and retrying.
+Files modified: app/velloreadmin/page.js, app/api/cloudinary-sign/route.js, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-09
+
+Time:
+23:26 IST
+
+Page/Component:
+Admin Product Editor
+
+File:
+app/velloreadmin/page.js
+errors.txt
+
+Operation:
+Firestore product create/save
+
+Error:
+Function addDoc() called with invalid data. Unsupported field value: undefined (found in field id in document products/BDNsvnbWAOfJWAUIdzbJ).
+
+Cause:
+The product editor always sent id: product?.id during save. New products do not have an id yet, so the create payload included id: undefined. Firestore does not allow undefined field values in document data.
+
+Resolution:
+Updated ProductEditor submit logic to include id only when editing an existing product.
+Updated saveProduct to destructure id out of the payload before building the Firestore document data.
+Create operations now call addDoc without an id field, while update operations still use id only for the document reference.
+Files modified: app/velloreadmin/page.js, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+00:15 IST
+
+Page/Component:
+Build Config & Admin Auth
+
+File:
+next.config.mjs
+public/fire.glb
+app/velloreadmin/page.js
+
+Operation:
+Phase 1 Transformation Build Fixes
+
+Error:
+1. Build warnings due to missing 3D packages (@react-three/fiber).
+2. Large unused 29MB asset slowing deployment.
+3. Firebase auth imports mistakenly pulling from 'firebase/firestore'.
+
+Cause:
+Legacy code referenced uninstalled packages and unused 3D models. Admin refactor accidentally used the wrong Firebase import path.
+
+Resolution:
+1. Removed `optimizePackageImports` for 3D packages in next.config.mjs.
+2. Deleted public/fire.glb.
+3. Fixed imports in app/velloreadmin/page.js to use 'firebase/auth'.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+01:41 IST
+
+Page/Component:
+Admin Products and Public Products Catalog
+
+File:
+components/admin/ProductsTab.js
+hooks/useFirestoreProducts.js
+app/products/page.js
+errors.txt
+
+Operation:
+Realtime product create/read sync from /velloreadmin to /products
+
+Error:
+Products added from /velloreadmin were not appearing on http://localhost:3000/products.
+
+Cause:
+The shared product listener queried Firestore with orderBy('createdAt', 'desc'). Firestore orderBy only returns documents where the ordered field exists, so products with missing or incompatible createdAt data could be excluded from the public catalog. The active admin product writer also did not consistently save public catalog fields such as slug and status with server timestamps.
+
+Resolution:
+Updated useFirestoreProducts to read the full products collection and sort client-side by createdAt/updatedAt, so legacy or partially migrated products are still visible.
+Updated the active admin ProductsTab writer to trim public fields, save slug/status, and use serverTimestamp for createdAt/updatedAt.
+Updated /products to show Firestore read errors instead of silently rendering an empty catalog.
+Files modified: components/admin/ProductsTab.js, hooks/useFirestoreProducts.js, app/products/page.js, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+01:43 IST
+
+Page/Component:
+Firebase Firestore Backend
+
+File:
+app/sitemap.js
+lib/firebase.js
+errors.txt
+
+Operation:
+Build-time Firestore access and public product loading
+
+Error:
+PERMISSION_DENIED: Cloud Firestore API has not been used in project velloreenterprisesweb before or it is disabled.
+
+Cause:
+The Firebase project currently selected by the app configuration is reporting that the Cloud Firestore API is disabled or unavailable. If this is the same project used in development, public product reads cannot work until Firestore is enabled and reachable.
+
+Resolution:
+Code-level product sync was fixed separately by making the product listener include all product documents and by normalizing admin-created product data.
+Firebase Console action is still required if this warning appears in the browser or build output: enable Cloud Firestore API for the configured Firebase project, confirm the project id in .env.local, and make sure Firestore security rules allow public read access to products.
+Files modified: errors.txt.
+
+Status:
+Pending
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+02:03 IST
+
+Page/Component:
+Firestore client hooks and admin/public catalog pages
+
+File:
+hooks/useFirestoreProducts.js
+hooks/useFirestoreCategories.js
+hooks/useFirestoreInquiries.js
+hooks/useFirestoreAMC.js
+hooks/useActivityLogs.js
+components/admin/ProductsTab.js
+components/admin/InquiriesTab.js
+components/admin/AMCTab.js
+errors.txt
+
+Operation:
+Firestore client reads for products, categories, inquiries, AMC requests, and activity logs
+
+Error:
+FIRESTORE (11.10.0) INTERNAL ASSERTION FAILED: Unexpected state (ID: ca9) CONTEXT: {"ve":-1}
+
+Cause:
+The crash occurred inside Firebase Firestore's realtime watch/listen stream used by onSnapshot. This can break the Next.js client runtime before the app can show a normal Firestore error state.
+
+Resolution:
+Removed onSnapshot usage from local Firestore hooks and replaced realtime listeners with getDocs reads.
+Product and category hooks now refresh on window focus and manual refresh events.
+Admin product, inquiry, and AMC mutations now trigger local reloads after update/delete/create operations.
+Files modified: hooks/useFirestoreProducts.js, hooks/useFirestoreCategories.js, hooks/useFirestoreInquiries.js, hooks/useFirestoreAMC.js, hooks/useActivityLogs.js, components/admin/ProductsTab.js, components/admin/InquiriesTab.js, components/admin/AMCTab.js, errors.txt.
+
+Status:
+Fixed
+==================================================
+
+==================================================
+Date:
+2026-07-10
+
+Time:
+02:06 IST
+
+Page/Component:
+Next.js Build Cache and Sitemap
+
+File:
+app/sitemap.js
+errors.txt
+
+Operation:
+Production build verification after Firestore listener fix
+
+Error:
+ENOTEMPTY: directory not empty, rmdir 'C:\vellore-enterprises\.next\export'.
+
+Cause:
+The previous abrupt laptop shutdown left stale generated files inside the .next build cache. The sitemap route also imported Firestore and attempted build-time Firebase reads, producing unrelated Firebase/grpc warnings during builds.
+
+Resolution:
+Deleted the generated .next cache after verifying the resolved target path was inside the project workspace.
+Updated app/sitemap.js to return static public routes only and avoid Firestore access during build.
+Reran npm run build successfully.
+Files modified: app/sitemap.js, errors.txt.
+
+Status:
+Fixed
+==================================================

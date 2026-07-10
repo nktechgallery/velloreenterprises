@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
+  compress: true,
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
@@ -8,7 +10,7 @@ const nextConfig = {
     ],
   },
   experimental: {
-    optimizePackageImports: ['@react-three/fiber', '@react-three/drei', 'three'],
+    optimizePackageImports: ['firebase', 'react-hot-toast'],
   },
 };
 
