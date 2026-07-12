@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { timestampValue } from '@/lib/dateUtils';
+
+/** Minimum ms between refetches triggered by window focus */
+const REFETCH_COOLDOWN_MS = 60_000;
 
 function normalizeProduct(document) {
   const data = document.data();
@@ -17,6 +20,7 @@ export function useFirestoreProducts() {
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const lastFetchedAt = useRef(0);
 
   const refreshProducts = () => setRefreshKey((value) => value + 1);
 
@@ -26,19 +30,33 @@ export function useFirestoreProducts() {
     async function loadProducts() {
       setLoading(true);
       try {
-        const q = query(collection(db, 'products'));
+        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         if (cancelled) return;
-        const nextProducts = snapshot.docs
-          .map(normalizeProduct)
-          .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
+        const nextProducts = snapshot.docs.map(normalizeProduct);
         setProducts(nextProducts);
         setOffline(false);
         setError('');
+        lastFetchedAt.current = Date.now();
       } catch (err) {
         if (cancelled) return;
-        setOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
-        setError(err?.message || 'Unable to load products.');
+        // Fallback: try without orderBy in case index doesn't exist
+        try {
+          const fallbackQuery = query(collection(db, 'products'));
+          const snapshot = await getDocs(fallbackQuery);
+          if (cancelled) return;
+          const nextProducts = snapshot.docs
+            .map(normalizeProduct)
+            .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
+          setProducts(nextProducts);
+          setOffline(false);
+          setError('');
+          lastFetchedAt.current = Date.now();
+        } catch (fallbackErr) {
+          if (cancelled) return;
+          setOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+          setError(fallbackErr?.message || 'Unable to load products.');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -52,7 +70,11 @@ export function useFirestoreProducts() {
   }, [refreshKey]);
 
   useEffect(() => {
-    const handleFocus = () => refreshProducts();
+    const handleFocus = () => {
+      // Debounce: skip if last fetch was recent
+      if (Date.now() - lastFetchedAt.current < REFETCH_COOLDOWN_MS) return;
+      refreshProducts();
+    };
     const handleProductsChanged = () => refreshProducts();
 
     window.addEventListener('focus', handleFocus);

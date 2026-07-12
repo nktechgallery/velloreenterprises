@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { timestampValue } from '@/lib/dateUtils';
 
@@ -16,15 +16,24 @@ export function useFirestoreInquiries() {
     async function loadInquiries() {
       setLoading(true);
       try {
-        const q = query(collection(db, 'inquiries'));
+        const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         if (cancelled) return;
-        const data = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
-        setInquiries(data);
-      } catch (error) {
-        if (!cancelled) console.error('Error fetching inquiries:', error);
+        setInquiries(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch (err) {
+        // Fallback: client-side sort if index doesn't exist
+        if (cancelled) return;
+        try {
+          const fallbackQuery = query(collection(db, 'inquiries'));
+          const snapshot = await getDocs(fallbackQuery);
+          if (cancelled) return;
+          const data = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
+          setInquiries(data);
+        } catch (fallbackErr) {
+          if (!cancelled) console.error('Error fetching inquiries:', fallbackErr);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

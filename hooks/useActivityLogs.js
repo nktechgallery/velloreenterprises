@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { timestampValue } from '@/lib/dateUtils';
 
@@ -16,16 +16,30 @@ export function useActivityLogs(limitCount = 20) {
     async function loadLogs() {
       setLoading(true);
       try {
-        const q = query(collection(db, 'activity_logs'));
+        // Try server-side ordering + limiting first
+        const q = query(
+          collection(db, 'activity_logs'),
+          orderBy('timestamp', 'desc'),
+          limit(limitCount)
+        );
         const snapshot = await getDocs(q);
         if (cancelled) return;
-        const logsData = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => timestampValue(b.timestamp) - timestampValue(a.timestamp))
-          .slice(0, limitCount);
-        setLogs(logsData);
-      } catch (error) {
-        if (!cancelled) console.error('Error fetching activity logs:', error);
+        setLogs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch (err) {
+        // Fallback: fetch all and sort/slice client-side if index doesn't exist
+        if (cancelled) return;
+        try {
+          const fallbackQuery = query(collection(db, 'activity_logs'));
+          const snapshot = await getDocs(fallbackQuery);
+          if (cancelled) return;
+          const logsData = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => timestampValue(b.timestamp) - timestampValue(a.timestamp))
+            .slice(0, limitCount);
+          setLogs(logsData);
+        } catch (fallbackErr) {
+          if (!cancelled) console.error('Error fetching activity logs:', fallbackErr);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

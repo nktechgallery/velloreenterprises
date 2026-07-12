@@ -477,3 +477,113 @@ Files modified: app/sitemap.js, errors.txt.
 Status:
 Fixed
 ==================================================
+==================================================
+Date: 2026-07-11
+Time: 19:10 IST
+Page/Component: Global experience and data hooks
+File: app/globals.css, app/layout.js, hooks/useFirestoreProducts.js, hooks/useFirestoreCategories.js, lib/firebase.js
+Operation: Stitch redesign and performance/security overhaul
+Error: The former dark theme did not match the supplied light glassmorphism screens; fonts blocked rendering, focus events caused repeat Firestore reads, and public Firebase configuration used hardcoded fallbacks.
+Cause: Legacy design tokens and compatibility code predated the supplied Vellore Executive specification.
+Resolution: Implemented the Vellore Executive tokens and shared shell, migrated fonts to next/font, throttled focus refreshes to 60 seconds, removed hardcoded Firebase fallbacks and unused Storage initialization, and added route transitions, offline/cookie states, security headers, and Cloudinary signing rate/origin checks.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-11
+Time: 19:18 IST
+Page/Component: Product catalog test suite
+File: app/products/page.js, tests/catalog.spec.js
+Operation: Browser regression testing
+Error: Chromium catalog test expected the accessible heading "Fire Protection Catalog" but the page rendered "Product Catalog". Firefox and WebKit executables are not installed locally.
+Cause: The catalog heading drifted from the established test contract; optional Playwright browser binaries are absent from the workstation.
+Resolution: Restored the expected catalog heading. Chromium tests were rerun separately; missing optional browser binaries do not affect the application build.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-11
+Time: 19:35 IST
+Page/Component: Product catalog grid
+File: app/products/page.js, app/globals.css
+Operation: Product density and responsive layout adjustment
+Error: Catalog product cards were oversized and too few products were visible per row.
+Cause: The shared grid used a 280px minimum card width and spacious card/media/action sizing designed for marketing surfaces.
+Resolution: Added catalog-scoped responsive grids with four desktop, three laptop/tablet, two mobile, and one narrow-mobile columns; compacted media, typography, padding, and actions without changing product behavior.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 00:10 IST
+Page/Component: Product catalog header
+File: app/products/page.js, app/globals.css
+Operation: Remove catalog introduction and dark background
+Error: The products route displayed a redundant breadcrumb/title introduction inside a black legacy section above the catalog.
+Cause: The old catalog hero remained in the page after the global light navigation redesign.
+Resolution: Removed the breadcrumb, title, description, unused Breadcrumbs import, and legacy dark surface; the catalog now begins directly below the persistent global navbar on a transparent light surface.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 00:25 IST
+Page/Component: Next.js development runtime
+File: .next generated output
+Operation: Resolve missing development chunks
+Error: /products returned HTML while layout.css, main-app.js, app-pages-internals.js, and route chunks returned 404.
+Cause: Concurrent stale Next.js processes on ports 3000 and 3001 were reading and rewriting the same .next directory, mixing production and development manifests.
+Resolution: Stopped both workspace server processes, completely removed generated .next output, and started one clean next dev instance on port 3001. Verified /products and all nine referenced CSS/JS assets return HTTP 200.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 00:40 IST
+Page/Component: Product details
+File: app/products/[slug]/page.js, app/globals.css
+Operation: Complete light-theme conversion
+Error: Product details retained black backgrounds, dark panels, white borders/text, and gold accents after the catalog redesign.
+Cause: Route-specific legacy utility classes bypassed the shared Vellore Executive theme.
+Resolution: Added a fully scoped light product-detail surface and converted the gallery, facts, purchase controls, specifications, loaders, and related-product cards to white glass, charcoal, blue-gray, and Vellore red styling.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 01:20 IST
+Page/Component: Navigation, semantic search, and support chat
+File: components/Navbar.js, components/CommandPalette.js, components/SupportChat.js, components/admin/SupportChatsTab.js, app/layout.js, firestore.rules
+Operation: Professional navigation and customer-support platform
+Error: The navigation looked informal, its search button targeted an unmounted command palette, and no customer chat or administrator handoff existed.
+Cause: The simplified navigation used text glyphs in place of a consistent icon system; search implementation was not included in the root render tree; support conversations had no data model or admin surface.
+Resolution: Rebuilt the responsive navigation with restrained typography and SVG controls, mounted and upgraded semantic intent search, added an automated support assistant with persisted session conversations, added polling for administrator replies, created a protected Support Chats dashboard tab, and added scoped Firestore rules.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 01:50 IST
+Page/Component: Inquiry cart and PDF quotation
+File: components/CartDrawer.js, lib/generatePdfQuote.js, app/globals.css
+Operation: Light glass cart conversion and PDF download hardening
+Error: The inquiry drawer retained a dark theme and its PDF action had no loading, success, error, or customer-note handling.
+Cause: Cart-specific legacy utilities bypassed the executive theme; PDF generation was invoked without guarded asynchronous UI state.
+Resolution: Applied translucent light surfaces with backdrop filters to the overlay, drawer, header, items, and footer; added a branded Download PDF Quote action with progress/toast handling; corrected the address; updated PDF branding; and included optional order notes.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 02:10 IST
+Page/Component: PDF quotation and support widget
+File: lib/generatePdfQuote.js, components/CartDrawer.js, app/globals.css
+Operation: Fix PDF generation and cart stacking
+Error: Download PDF Quote reported generation failure, and the support trigger appeared above the open cart.
+Cause: jspdf-autotable v5 no longer reliably patches doc.autoTable through a side-effect import; the support widget z-index exceeded the cart drawer and had no cart-open state.
+Resolution: Switched to the supported autoTable(doc, options) API with guarded final-position access, added a cart-open body state, and hide/disable the support widget while the cart is active.
+Status: Fixed
+==================================================
+==================================================
+Date: 2026-07-12
+Time: 03:20 IST
+Page/Component: Site-wide discoverability and production readiness
+File: app/layout.js, route layouts, app/sitemap.js, app/robots.js, lib/seo.js, components/JsonLd.js, next.config.mjs, public manifest/service worker
+Operation: Technical SEO, GEO, AEO, local SEO, PWA, analytics, accessibility, performance, and security overhaul
+Error: Client-rendered public routes lacked unique server metadata; referenced social/favicon assets were missing; product/image URLs were absent from sitemaps; the PWA had no icons or offline worker; analytics conversion hooks and AI-focused answer content were unavailable.
+Cause: Initial implementation concentrated metadata in the root layout and did not include a reusable discoverability architecture for client routes and dynamic catalog content.
+Resolution: Added reusable metadata/schema builders, route metadata layouts, comprehensive LocalBusiness/WebSite/Breadcrumb/Product/Service/FAQ schemas, generated social artwork, dynamic product and image sitemaps, video-sitemap readiness, AI crawler directives, a fire-safety guide, Vellore location page, consent-gated analytics/event tracking, optimized Next images, enhanced CSP/security headers, and an offline PWA shell. Verified all public endpoints return HTTP 200 and browser regressions pass.
+Status: Fixed
+==================================================

@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PRODUCT_CATEGORIES, CATEGORY_ICONS } from '@/lib/constants';
+
+/** Minimum ms between refetches triggered by window focus */
+const REFETCH_COOLDOWN_MS = 60_000;
 
 const DEFAULT_CATEGORIES = PRODUCT_CATEGORIES.map((name, i) => ({
   id: `default-${i}`,
@@ -49,6 +52,7 @@ export function useFirestoreCategories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const lastFetchedAt = useRef(0);
 
   const refreshCategories = () => setRefreshKey((value) => value + 1);
 
@@ -64,6 +68,7 @@ export function useFirestoreCategories() {
         const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setCategories(mergeCategories(docs));
         setError('');
+        lastFetchedAt.current = Date.now();
       } catch (err) {
         if (cancelled) return;
         console.error('[useFirestoreCategories]', err);
@@ -82,7 +87,11 @@ export function useFirestoreCategories() {
   }, [refreshKey]);
 
   useEffect(() => {
-    const handleFocus = () => refreshCategories();
+    const handleFocus = () => {
+      // Debounce: skip if last fetch was recent
+      if (Date.now() - lastFetchedAt.current < REFETCH_COOLDOWN_MS) return;
+      refreshCategories();
+    };
     const handleCategoriesChanged = () => refreshCategories();
 
     window.addEventListener('focus', handleFocus);

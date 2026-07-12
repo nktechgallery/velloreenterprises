@@ -41,6 +41,20 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    match /support_chats/{chatId} {
+      allow create: if request.resource.data.sessionId == chatId
+        && request.resource.data.messages is list
+        && request.resource.data.messages.size() <= 100;
+      allow read: if isAdmin() || resource.data.sessionId == chatId;
+      allow update: if isAdmin() || (
+        resource.data.sessionId == chatId
+        && request.resource.data.sessionId == chatId
+        && request.resource.data.messages is list
+        && request.resource.data.messages.size() <= 100
+      );
+      allow delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

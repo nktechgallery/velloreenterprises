@@ -1,26 +1,35 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { COMPANY, INDUSTRIES, SERVICES } from '@/lib/constants';
 import { Button, MetricCard, Section } from '@/components/ui';
 import { useFirestoreProducts } from '@/hooks/useFirestoreProducts';
 import { useReveal } from '@/hooks/useReveal';
+import { optimizedImageUrl } from '@/lib/imageUrl';
 import PassMethod from '@/components/PassMethod';
+import JsonLd from '@/components/JsonLd';
+import { faqSchema as buildFaqSchema } from '@/lib/seo';
 
 /* Dynamic imports — only loaded when scrolled into view */
-import AnimatedCounter from '@/components/landing/AnimatedCounter';
-import Timeline from '@/components/landing/Timeline';
-import CategoryShowcase from '@/components/landing/CategoryShowcase';
-import TestimonialCarousel from '@/components/landing/TestimonialCarousel';
-import FAQAccordion from '@/components/landing/FAQAccordion';
+const AnimatedCounter = dynamic(() => import('@/components/landing/AnimatedCounter'));
+const Timeline = dynamic(() => import('@/components/landing/Timeline'));
+const CategoryShowcase = dynamic(() => import('@/components/landing/CategoryShowcase'));
+const TestimonialCarousel = dynamic(() => import('@/components/landing/TestimonialCarousel'));
+const FAQAccordion = dynamic(() => import('@/components/landing/FAQAccordion'));
 
 const stats = [
   { end: 500, suffix: '+', label: 'Clients protected', detail: 'Industrial, commercial, and residential' },
-  { end: 10, suffix: '+', label: 'Years expertise', detail: 'Fire safety consultation and service' },
+  { end: 4, suffix: '+', label: 'Years expertise', detail: 'Fire safety consultation and service' },
   { end: 24, suffix: '/7', label: 'Emergency support', detail: 'Rapid response phone and WhatsApp' },
   { end: 100, suffix: '%', label: 'Compliance focus', detail: 'Products aligned to BIS standards' },
 ];
+const homeFaqSchema = buildFaqSchema([
+  ['What types of fire safety equipment do you supply?','We supply fire extinguishers, alarm systems, hydrant equipment, suppression systems, fire-stop products, and safety gear from established manufacturers.'],
+  ['Do you provide fire safety installation and maintenance?','Yes. Vellore Enterprises supports equipment supply, installation coordination, testing, scheduled maintenance, documentation, and annual maintenance contracts.'],
+  ['Which areas does Vellore Enterprises serve?','We serve Vellore, Kangeyanallur, nearby cities, and larger projects across Tamil Nadu.'],
+]);
 
 const whyChooseUs = [
   {
@@ -96,7 +105,7 @@ function FeaturedProducts() {
           >
             {product.image && (
               <div className="product-media mb-4 rounded-2xl overflow-hidden h-40">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                <Image src={optimizedImageUrl(product.image, 400)} alt={`${product.name} — ${product.category || 'fire safety equipment'}`} className="w-full h-full object-cover" loading="lazy" width={400} height={160} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
               </div>
             )}
             <p className="eyebrow mb-2">{product.category || 'Product'}</p>
@@ -133,6 +142,7 @@ function RevealCard({ children, className = '', delay = 0 }) {
 export default function HomePage() {
   return (
     <>
+      <JsonLd data={homeFaqSchema} />
       {/* ════════ Enterprise Hero ════════ */}
       <section className="hero-shell">
         <div className="orbital-bg" aria-hidden="true">

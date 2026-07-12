@@ -1,10 +1,9 @@
 import { COMPANY, INDUSTRIES, SERVICES } from '@/lib/constants';
 import { Button, MetricCard, Section } from '@/components/ui';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbSchema, pageMetadata } from '@/lib/seo';
 
-export const metadata = {
-  title: 'About Us',
-  description: 'Learn about Vellore Enterprises, a fire safety and fire protection solutions provider in Vellore, Tamil Nadu.',
-};
+export const metadata = pageMetadata({ title:'About Vellore Enterprises — Fire Safety Expertise', description:'Learn about Vellore Enterprises, our fire-protection experience, certified equipment approach, maintenance capabilities, industries served, and Vellore service coverage.', path:'/about', keywords:['about Vellore Enterprises','fire safety expertise Vellore','BIS fire safety products'] });
 
 const values = [
   ['Precision', 'Every recommendation is tied to site risk, compliance needs, and long-term maintainability.'],
@@ -22,6 +21,7 @@ const milestones = [
 export default function AboutPage() {
   return (
     <>
+      <JsonLd data={breadcrumbSchema([{name:'Home',path:'/'},{name:'About',path:'/about'}])} />
       <section className="hero-shell min-h-[76svh]">
         <div className="container-wide grid items-center gap-10 pt-16 lg:grid-cols-[1fr_.9fr]">
           <div>
@@ -37,7 +37,7 @@ export default function AboutPage() {
             <MetricCard value="500+" label="Clients served" detail="Across Vellore and Tamil Nadu" />
             <MetricCard value="1000+" label="Systems supported" detail="Products, installs, and AMC" />
             <MetricCard value="24/7" label="Support" detail="Emergency response channel" />
-            <MetricCard value="10+" label="Years" detail="Fire safety service experience" />
+            <MetricCard value="4+" label="Years" detail="Fire safety service experience" />
           </div>
         </div>
       </section>

@@ -2,14 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
 import { useFirestoreCategories } from '@/hooks/useFirestoreCategories';
 import { useFirestoreProducts } from '@/hooks/useFirestoreProducts';
 import { COMPANY, buildWhatsAppUrl, productSlug } from '@/lib/constants';
+import { optimizedImageUrl } from '@/lib/imageUrl';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -18,7 +19,7 @@ export default function ProductsPage() {
   const { categoryNames, loading: categoriesLoading } = useFirestoreCategories();
   const { addItem, totalItems, proceedToWhatsApp } = useCart();
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [activeCategory, setActiveCategory] = useState(categoryParam || 'All');
   const [viewMode, setViewMode] = useState('grid');
   const [priceSort, setPriceSort] = useState('none');
@@ -84,18 +85,8 @@ export default function ProductsPage() {
 
   return (
     <>
-      <section className="border-b border-white/10 bg-gradient-to-b from-[#050505] to-[#0a0a0a] pb-16 pt-32">
-        <div className="container-pro">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Products' }]} />
-          <h1 className="heading-lg mt-6">Product Catalog</h1>
-          <p className="lead-copy mt-4 max-w-2xl">
-            Browse certified fire safety products, add items to your inquiry cart, and send the final list to WhatsApp.
-          </p>
-        </div>
-      </section>
-
-      <section className="min-h-[60vh] bg-[#050505] py-12">
-        <div className="container-wide flex flex-col gap-8 lg:flex-row">
+      <section className="catalog-section min-h-[60vh] pb-12 pt-8">
+        <div className="container-wide catalog-layout flex flex-col gap-8 lg:flex-row">
           <aside className="w-full shrink-0 space-y-8 lg:w-72">
             <div>
               <p className="eyebrow mb-3">Search Catalog</p>
@@ -169,7 +160,7 @@ export default function ProductsPage() {
           <div className="flex-1">
             <div className="mb-6 flex flex-col items-start justify-between gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center">
               <div>
-                <h2 className="font-display text-2xl font-bold">{activeCategory === 'All' ? 'All Products' : activeCategory}</h2>
+                <h1 className="font-display text-2xl font-bold">{activeCategory === 'All' ? 'All Fire Safety Products' : activeCategory}</h1>
                 <p className="mt-1 text-sm text-white/50">Showing {filteredProducts.length} results</p>
               </div>
 
@@ -213,15 +204,18 @@ export default function ProductsPage() {
             ) : (
               <div className={viewMode === 'grid' ? 'product-grid' : 'product-grid-list'}>
                 {filteredProducts.map((product) => (
-                  <article key={product.id} className="product-card card-premium group">
+                  <article key={product.id} className="product-card catalog-product-card card-premium group">
                     <Link href={`/products/${product.slug || product.id}`} className="block">
                       {product.image ? (
                         <div className="product-media overflow-hidden">
-                          <img
-                            src={product.image}
-                            alt={product.name}
+                          <Image
+                            src={optimizedImageUrl(product.image, 400)}
+                            alt={`${product.name} — ${product.category || 'fire safety equipment'}`}
                             className="h-full w-full object-cover"
                             loading="lazy"
+                            width={400}
+                            height={300}
+                            sizes="(max-width: 430px) 100vw, (max-width: 760px) 50vw, (max-width: 1280px) 33vw, 25vw"
                             onError={(event) => {
                               event.currentTarget.style.display = 'none';
                               event.currentTarget.parentElement?.classList.add('image-load-failed');
@@ -235,7 +229,7 @@ export default function ProductsPage() {
                       )}
                     </Link>
 
-                    <div className="flex flex-1 flex-col p-5">
+                    <div className="catalog-card-body flex flex-1 flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="eyebrow mb-1">{product.category || 'Product'}</p>
@@ -257,7 +251,7 @@ export default function ProductsPage() {
                         {product.description || 'Certified fire safety product available for inquiry and supply.'}
                       </p>
 
-                      <div className="mt-auto grid gap-2 pt-5 sm:grid-cols-2">
+                      <div className="catalog-card-actions mt-auto grid gap-2 pt-5 sm:grid-cols-2">
                         <button type="button" onClick={() => addProductToCart(product)} className="btn btn-primary">
                           Add to cart
                         </button>

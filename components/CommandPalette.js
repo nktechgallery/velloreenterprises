@@ -1,231 +1,45 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Fuse from 'fuse.js';
 import { useFirestoreProducts } from '@/hooks/useFirestoreProducts';
 import { PRODUCT_CATEGORIES, productSlug } from '@/lib/constants';
-import Fuse from 'fuse.js';
 
 const pages = [
-  { title: 'Home', href: '/', icon: '🏠' },
-  { title: 'Products', href: '/products', icon: '📦' },
-  { title: 'AMC Services', href: '/amc', icon: '🔧' },
-  { title: 'About Us', href: '/about', icon: '🏢' },
-  { title: 'Contact', href: '/contact', icon: '📞' },
+  { title:'Home', href:'/', type:'page', code:'HM', terms:'company overview fire safety solutions' },
+  { title:'Products', href:'/products', type:'page', code:'PR', terms:'equipment catalog buy fire safety' },
+  { title:'AMC Services', href:'/amc', type:'page', code:'AM', terms:'annual maintenance service refill inspection contract' },
+  { title:'About Us', href:'/about', type:'page', code:'AB', terms:'company story experience certification' },
+  { title:'Contact', href:'/contact', type:'page', code:'CT', terms:'support phone address quotation consultation' },
 ];
+const groups = [['fire','flame','safety','protection','emergency'],['extinguisher','cylinder','abc','co2','foam','suppression'],['alarm','detector','smoke','sensor','warning'],['amc','maintenance','service','repair','refill','inspection'],['quote','quotation','price','cost','buy','purchase','inquiry'],['office','commercial','company','workplace','business'],['factory','industrial','warehouse','plant']];
+function expand(value) { const words=value.toLowerCase().split(/\s+/).filter(Boolean); const result=new Set(words); groups.forEach((group)=>{if(group.some((word)=>words.includes(word)))group.forEach((word)=>result.add(word));}); return [...result].join(' '); }
 
 export default function CommandPalette() {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [activeIndex, setActiveIndex] = useState(0);
-  const { products } = useFirestoreProducts();
-  const router = useRouter();
-  const inputRef = useRef(null);
-
-  const toggle = useCallback(() => {
-    setOpen((v) => {
-      if (!v) {
-        setQuery('');
-        setActiveIndex(0);
-      }
-      return !v;
-    });
-  }, []);
-
-  useEffect(() => {
-    const handleKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        toggle();
-      }
-      if (e.key === 'Escape' && open) {
-        setOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [open, toggle]);
-
-  useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
-  }, [open]);
-
-  const searchData = useMemo(() => {
-    const data = [];
-    
-    // Pages
-    pages.forEach(p => {
-      data.push({
-        type: 'page',
-        title: p.title,
-        subtitle: p.href,
-        icon: p.icon,
-        href: p.href,
-        searchTerms: `${p.title} ${p.href}`
-      });
-    });
-
-    // Categories
-    PRODUCT_CATEGORIES.forEach(c => {
-      data.push({
-        type: 'category',
-        title: c,
-        subtitle: 'Product category',
-        icon: '🏷️',
-        href: `/products?category=${encodeURIComponent(c)}`,
-        searchTerms: c
-      });
-    });
-
-    // Products
-    products.forEach(p => {
-      data.push({
-        type: 'product',
-        title: p.name,
-        subtitle: p.category || 'Product',
-        icon: '🔥',
-        href: `/products/${productSlug(p)}`,
-        searchTerms: `${p.name} ${p.code || ''} ${p.category || ''} ${p.description || ''}`
-      });
-    });
-
-    return data;
-  }, [products]);
-
-  const fuse = useMemo(() => {
-    return new Fuse(searchData, {
-      keys: ['searchTerms'],
-      threshold: 0.4,
-      distance: 100,
-    });
-  }, [searchData]);
-
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    const fuseResults = fuse.search(query.trim());
-    return fuseResults.slice(0, 8).map(r => r.item);
-  }, [query, fuse]);
-
-  const navigate = (href) => {
-    setOpen(false);
-    router.push(href);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && results[activeIndex]) {
-      navigate(results[activeIndex].href);
-    }
-  };
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [query]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="command-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Command palette"
-    >
-      <div className="command-panel">
-        <div className="flex items-center gap-3 px-5">
-          <svg className="w-5 h-5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-          <input
-            ref={inputRef}
-            className="command-input !border-0 !pl-0"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search products, pages, categories (e.g., 'abc', 'extinguisher')..."
-            aria-label="Search"
-            role="combobox"
-            aria-expanded={results.length > 0}
-            aria-activedescendant={results[activeIndex] ? `cmd-item-${activeIndex}` : undefined}
-          />
-          <kbd className="hidden sm:inline-block text-xs text-white/30 bg-white/8 rounded-md px-2 py-1 border border-white/10 shrink-0">
-            ESC
-          </kbd>
-        </div>
-
-        <div className="command-results" role="listbox" aria-label="Search results">
-          {results.length === 0 && query.trim().length > 0 && (
-            <div className="p-8 text-center text-white/40 text-sm flex flex-col items-center">
-              <span className="text-3xl mb-2 opacity-50">🤖</span>
-              <p>Our smart search couldn't find anything for "{query}"</p>
-              <p className="text-xs mt-1">Try broader terms or check spelling.</p>
-            </div>
-          )}
-          {results.length === 0 && query.trim().length === 0 && (
-            <div className="p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/30 px-4 mb-2 font-condensed font-bold">Quick Navigation</p>
-              {pages.map((p, i) => (
-                <button
-                  key={p.href}
-                  id={`cmd-item-${i}`}
-                  className={`command-item ${activeIndex === i ? 'command-item-active' : ''}`}
-                  onClick={() => navigate(p.href)}
-                  role="option"
-                  aria-selected={activeIndex === i}
-                >
-                  <span className="command-item-icon">{p.icon}</span>
-                  <div>
-                    <p className="font-semibold text-sm">{p.title}</p>
-                    <p className="text-xs text-white/35">{p.href}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-          {results.length > 0 && (
-            <div className="p-2">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#f5d76e] px-4 mb-2 font-condensed font-bold opacity-70">Smart Results</p>
-              {results.map((r, i) => (
-                <button
-                  key={`${r.type}-${r.title}-${i}`}
-                  id={`cmd-item-${i}`}
-                  className={`command-item ${activeIndex === i ? 'command-item-active' : ''}`}
-                  onClick={() => navigate(r.href)}
-                  role="option"
-                  aria-selected={activeIndex === i}
-                >
-                  <span className="command-item-icon">{r.icon}</span>
-                  <div className="min-w-0 flex-1 flex flex-col items-start text-left">
-                    <p className="font-semibold text-sm truncate w-full">{r.title}</p>
-                    <p className="text-xs text-white/35 truncate w-full">{r.subtitle}</p>
-                  </div>
-                  <span className="ml-auto badge badge-gold text-[10px] shrink-0">{r.type}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="command-footer">
-          <span className="text-xs text-white/30">
-            <kbd>↑↓</kbd> navigate
-          </span>
-          <span className="text-xs text-white/30">
-            <kbd>↵</kbd> select
-          </span>
-          <span className="text-xs text-white/30">
-            <kbd>esc</kbd> close
-          </span>
-        </div>
+  const [open,setOpen]=useState(false); const [query,setQuery]=useState(''); const [active,setActive]=useState(0);
+  const inputRef=useRef(null); const router=useRouter(); const { products }=useFirestoreProducts();
+  useEffect(()=>{ const key=(event)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();setOpen(true);}if(event.key==='Escape')setOpen(false);}; window.addEventListener('keydown',key); return()=>window.removeEventListener('keydown',key);},[]);
+  useEffect(()=>{if(open){setQuery('');setActive(0);requestAnimationFrame(()=>inputRef.current?.focus());}},[open]);
+  const data=useMemo(()=>[
+    ...pages.map((item)=>({...item,subtitle:item.href,searchTerms:`${item.title} ${item.terms}`})),
+    ...PRODUCT_CATEGORIES.map((title)=>({title,href:`/products?category=${encodeURIComponent(title)}`,type:'category',code:'CAT',subtitle:'Product category',searchTerms:`${title} fire equipment`})),
+    ...products.map((product)=>({title:product.name,href:`/products/${productSlug(product)}`,type:'product',code:'EQ',subtitle:product.category||'Equipment',searchTerms:`${product.name} ${product.code||''} ${product.category||''} ${product.description||''}`})),
+  ],[products]);
+  const fuse=useMemo(()=>new Fuse(data,{keys:['title',{name:'searchTerms',weight:.7}],threshold:.48,distance:180,ignoreLocation:true}),[data]);
+  const results=useMemo(()=>query.trim()?fuse.search(expand(query)).slice(0,9).map((result)=>result.item):pages,[query,fuse]);
+  const navigate=(href)=>{setOpen(false);router.push(href);};
+  const onKeyDown=(event)=>{if(event.key==='ArrowDown'){event.preventDefault();setActive((value)=>Math.min(value+1,results.length-1));}if(event.key==='ArrowUp'){event.preventDefault();setActive((value)=>Math.max(value-1,0));}if(event.key==='Enter'&&results[active])navigate(results[active].href);};
+  useEffect(()=>setActive(0),[query]);
+  if(!open)return null;
+  return <div className="command-overlay" role="dialog" aria-modal="true" aria-label="Semantic search" onMouseDown={(event)=>{if(event.target===event.currentTarget)setOpen(false);}}>
+    <div className="command-panel semantic-search-panel">
+      <div className="semantic-search-input"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input ref={inputRef} value={query} onChange={(event)=>setQuery(event.target.value)} onKeyDown={onKeyDown} placeholder="Search by product, purpose, site, or requirement…" aria-label="Semantic search query"/><kbd>ESC</kbd></div>
+      <div className="command-results" role="listbox">
+        <p className="semantic-result-label">{query ? 'Semantic results' : 'Quick navigation'}</p>
+        {results.length===0?<div className="semantic-empty"><span>VE</span><strong>No close matches</strong><p>Try a purpose such as “office smoke warning” or “annual extinguisher service”.</p></div>:results.map((item,index)=><button key={`${item.type}-${item.href}`} className={`command-item ${active===index?'command-item-active':''}`} onClick={()=>navigate(item.href)} role="option" aria-selected={active===index}><span className="command-item-icon">{item.code}</span><span className="semantic-result-copy"><strong>{item.title}</strong><small>{item.subtitle}</small></span><em>{item.type}</em></button>)}
       </div>
+      <footer className="command-footer"><span>↑↓ Navigate</span><span>↵ Open</span><span>Esc Close</span></footer>
     </div>
-  );
+  </div>;
 }

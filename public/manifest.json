@@ -1,10 +1,20 @@
 {
-  "name": "Vellore Enterprises",
-  "short_name": "Vellore",
-  "description": "Fire safety products, AMC, and emergency support in Vellore.",
-  "start_url": "/",
+  "id": "/",
+  "name": "Vellore Enterprises Fire Safety",
+  "short_name": "Vellore Safety",
+  "description": "Certified fire safety products, installation, AMC, audits, and emergency equipment support in Vellore and Tamil Nadu.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#050505",
-  "icons": []
+  "orientation": "portrait-primary",
+  "background_color": "#f9f9ff",
+  "theme_color": "#b80035",
+  "lang": "en-IN",
+  "categories": ["business", "shopping", "utilities"],
+  "icons": [{"src":"/brand-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
+  "shortcuts": [
+    {"name":"Browse products","url":"/products","icons":[{"src":"/brand-mark.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Request AMC","url":"/amc","icons":[{"src":"/brand-mark.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Contact support","url":"/contact","icons":[{"src":"/brand-mark.svg","sizes":"any","type":"image/svg+xml"}]}
+  ]
 }

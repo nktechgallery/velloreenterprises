@@ -6,9 +6,10 @@ Use this file as the first project reference before coding in this repo. Update 
 
 - Next.js 14 App Router website for Vellore Enterprises, a fire safety business in Vellore, Tamil Nadu.
 - Main user flows: premium marketing home page, realtime product catalog, product detail pages, inquiry cart, AMC request form, contact form, WhatsApp fallbacks, and a protected admin product manager at `/velloreadmin`.
-- Frontend stack: React 18, Next.js App Router, Tailwind CSS, custom global design-system CSS, `react-hot-toast`, `react-intersection-observer`.
+- Frontend stack: React 18, Next.js App Router, Tailwind CSS, Framer Motion, custom global design-system CSS, `react-hot-toast`, `react-intersection-observer`.
 - 3D stack was removed from the public experience to reduce client weight and build/runtime cost.
 - Backend/services: Firebase Auth and Firestore from browser code; Cloudinary signed upload API route for admin product images.
+- Customer support uses `support_chats` for session-based bot conversations and authenticated administrator handoff from the Support Chats admin tab.
 
 ## Important Files
 
@@ -26,6 +27,11 @@ Use this file as the first project reference before coding in this repo. Update 
 - `app/api/cloudinary-sign/route.js`: server route that signs Cloudinary uploads with `CLOUDINARY_API_SECRET`.
 - `app/robots.js`: generated robots policy; admin route is disallowed.
 - `app/sitemap.js`: generated sitemap for public routes.
+- `app/fire-safety-guide/page.js`: AEO/GEO educational guide with comparison table and direct-answer FAQs.
+- `app/locations/vellore/page.js`: local SEO landing page with consistent NAP, service areas, and map.
+- `lib/seo.js`, `components/JsonLd.js`: shared metadata and structured-data builders.
+- `components/SiteAnalytics.js`: consent-gated GA4, GTM, Clarity, and conversion event preparation.
+- `components/PwaRegistration.js`, `public/sw.js`: production service-worker registration and offline shell caching.
 - `components/ui.js`: shared Section, Button, MetricCard, SkeletonGrid, and EmptyState primitives.
 - `components/Navbar.js`, `components/CartDrawer.js`, `components/Footer.js`, `components/WhatsAppFloat.js`: shared shell and contact surfaces.
 - `components/PassMethod.js`: static PASS training section.
@@ -59,6 +65,12 @@ Use this file as the first project reference before coding in this repo. Update 
   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
   - `NEXT_PUBLIC_CLOUDINARY_API_KEY`
   - `CLOUDINARY_API_SECRET`
+- Optional analytics and webmaster verification:
+  - `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
+  - `NEXT_PUBLIC_BING_SITE_VERIFICATION`
+  - `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+  - `NEXT_PUBLIC_GTM_ID`
+  - `NEXT_PUBLIC_CLARITY_PROJECT_ID`
 - Admin page falls back to existing public Cloudinary values for compatibility:
   - cloud name: `dkrd0zooe`
   - API key: `332133135685411`
@@ -69,19 +81,20 @@ Use this file as the first project reference before coding in this repo. Update 
   - `products`: `name`, `code`, `category`, `description`, `features`, `image`, `slug`, `featured`, `price`, `status`, `createdAt`, `updatedAt`.
   - `contact_enquiries`: contact form payload plus `status`, `createdAt`.
   - `amc_requests`: AMC form payload plus `status`, `createdAt`.
+  - `support_chats`: random `sessionId`, message array, status, assignment, last message, and timestamps.
 - Product categories are centralized in `lib/constants.js`.
 - Product `features` is expected to be an array in public product cards; admin form accepts newline text and converts it to an array on save.
 - Product links resolve with `productSlug(product)` and route to `/products/[slug]`.
 
 ## UI And Design Conventions
 
-- Visual style is premium dark fire-safety branding: near-black backgrounds, glass panels, gold gradients, red/fire accents, responsive enterprise layouts, high-contrast text.
+- Visual style follows the supplied Vellore Executive system: light blue/pink mesh backgrounds, translucent white glass panels, Vellore red actions, 24px radii, responsive executive layouts, and high-contrast charcoal text.
 - Typography:
-  - Display: `Playfair Display`
-  - Body: `Barlow`
-  - Condensed/action labels: `Barlow Condensed`
+  - Display: `Outfit` via `next/font`
+  - Body: `Inter` via `next/font`
 - Common CSS utilities/classes live in `app/globals.css`: `glass-panel`, `card-premium`, `product-card`, `product-media`, `input-premium`, `admin-input`, `text-gold-gradient`, `text-fire-gradient`, `btn`, `whatsapp-float`, `canvas-interactive`, `reveal`, `skeleton-card`.
 - Keep layouts responsive with `container-pro`, `container-wide`, `section-shell`, and mobile-first Tailwind classes.
+- Public client pages use route-level `layout.js` files for server-rendered metadata; do not move metadata into client page modules.
 - Forms use explicit labels, accessible error text, `input-premium`/`admin-input`, toast feedback, Firestore write path, and WhatsApp fallback where applicable.
 - Prefer shared primitives from `components/ui.js` before adding new styling patterns.
 

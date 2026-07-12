@@ -1,0 +1,1526 @@
+================================================================================
+VELLORE ENTERPRISES — COMPLETE UI DOCUMENTATION
+================================================================================
+Application: Fire Safety E-Commerce & Admin Platform
+Framework: Next.js (App Router) with Tailwind CSS
+Backend: Firebase Firestore + Cloudinary (image hosting)
+Current Theme: Dark (black/gold) enterprise aesthetic
+Purpose: Complete UI specification for redesign via Google Stitch
+================================================================================
+
+
+================================================================================
+GLOBAL LAYOUT & PERSISTENT COMPONENTS
+================================================================================
+File: app/layout.js
+
+The root layout wraps every page and provides the following persistent elements:
+
+Structure:
+- <html lang="en"> with smooth scrolling enabled
+- <body> with noise texture background layer
+- Skip-to-content accessibility link ("Skip to content")
+- CartProvider context wrapper (session-stored inquiry cart)
+- Navbar (fixed top, persistent on all pages)
+- <main id="main-content"> — page content renders here
+- Footer (persistent on all pages)
+- WhatsApp floating button (persistent on all pages)
+- ToasterProvider (react-hot-toast notifications)
+
+SEO / Metadata (defined in layout):
+- Title template: "{Page Title} | Vellore Enterprises"
+- Default title: "Vellore Enterprises | Fire Safety Solutions in Vellore"
+- Meta description about fire safety solutions
+- Keywords: fire safety company in Vellore, fire extinguisher supplier, etc.
+- Open Graph tags (type: website, locale: en_IN, image: /og-image.jpg)
+- Twitter card (summary_large_image)
+- Canonical URL
+- Robots: index, follow, googleBot directives
+- Structured data: LocalBusiness schema (JSON-LD)
+- Structured data: FAQPage schema (JSON-LD)
+- Favicon, apple-touch-icon, manifest.json, theme-color (#050505)
+
+
+================================================================================
+COMPONENT: Navbar
+================================================================================
+File: components/Navbar.js
+
+Type: Fixed top navigation bar (persistent across all pages)
+Behavior: Hides on scroll down (past 200px), reveals on scroll up
+Background: Transparent at top, becomes glass (blurred dark) on scroll
+
+Layout (Desktop — lg+):
+- LEFT: Brand mark (logo)
+  - Gold gradient square icon with "VE" text
+  - "VELLORE" in white condensed font
+  - "ENTERPRISES" in gold condensed font
+- CENTER: Navigation pill bar (rounded-full container with subtle border)
+  - Links: HOME | PRODUCTS ▾ | AMC | ABOUT | CONTACT
+  - Active state: gold text (#f5d76e) with white/10 background
+  - Products link has mega menu dropdown indicator (chevron)
+- RIGHT: Action buttons
+  - Search icon button (triggers Command Palette via Ctrl+K)
+  - Cart icon button with badge showing total items count (gold badge)
+  - "Call now" primary button linking to phone number
+
+Mega Menu Dropdown (triggered by hovering PRODUCTS):
+- Full-width dropdown below navbar
+- LEFT COLUMN: "Product categories" heading
+  - Grid of 6 category cards (3 columns):
+    - Fire Extinguishers (icon: FE)
+    - Fire Alarms (icon: FA)
+    - Hydrant Systems (icon: HY)
+    - Suppression Systems (icon: SP)
+    - Fire Stop (icon: FS)
+    - Safety Gear (icon: SG)
+  - Each card: icon badge + category name, links to /products?category=...
+- RIGHT COLUMN: "Quick actions" glass panel
+  - "View all products" → /products
+  - "Request AMC quote" → /amc
+  - "Contact our team" → /contact
+
+Layout (Mobile — below lg):
+- LEFT: Brand mark (same as desktop)
+- RIGHT: Search button, Cart button, Hamburger toggle button
+  - Hamburger animates to X when open
+- Mobile menu (slides open below navbar):
+  - Glass panel container
+  - Navigation links: HOME, PRODUCTS, AMC, ABOUT, CONTACT (vertical list)
+  - Categories section header "CATEGORIES"
+  - Category links (same 6 categories)
+  - Full-width "Call now" button with phone number
+
+
+================================================================================
+COMPONENT: Footer
+================================================================================
+File: components/Footer.js
+
+Type: Site-wide footer, appears on every page
+Background: #050505 with radial gold gradient glow from bottom center
+
+Layout: 4-column grid (responsive):
+
+Column 1 — Brand:
+- VE logo icon + "VELLORE ENTERPRISES" text
+- Description: "Premium fire safety partner providing certified equipment..."
+- Certification badges: "BIS Certified", "ISO 9001:2015"
+- Social links: Instagram icon button
+
+Column 2 — Equipment:
+- Heading: "EQUIPMENT" (gold, condensed)
+- Links to first 5 product categories:
+  - Fire Extinguishers
+  - Fire Alarms
+  - Hydrant Systems
+  - Suppression Systems
+  - Fire Stop
+- "View all products →" link (gold, bold)
+
+Column 3 — Solutions:
+- Heading: "SOLUTIONS" (gold, condensed)
+- List of services (non-linked text):
+  - Fire extinguishers
+  - Fire alarm systems
+  - Hydrant systems
+  - Suppression systems
+  - Fire stop solutions
+  - Annual maintenance
+  - Refilling and pressure testing
+  - Safety audits and training
+- "AMC Contracts" link → /amc
+
+Column 4 — Reach Us:
+- Heading: "REACH US" (gold, condensed)
+- Address: 164, Vellore Road, Kangeyanallur, Vellore, Tamil Nadu - 632006 (with map pin icon)
+- Phone: +91 80722 64972 (clickable tel: link, with phone icon)
+- Email: velloreenterprises7@gmail.com (clickable mailto: link, with email icon)
+
+Bottom Bar:
+- LEFT: "© {year} Vellore Enterprises. All rights reserved."
+- RIGHT: "Admin Portal" link → /velloreadmin
+
+
+================================================================================
+COMPONENT: WhatsApp Floating Button
+================================================================================
+File: components/WhatsAppFloat.js
+
+Type: Floating action button (FAB), always visible
+Position: Fixed, bottom-right corner of viewport
+Appearance: Green WhatsApp-branded circle with WhatsApp icon (white SVG)
+Action: Opens WhatsApp with pre-filled message "Hello Vellore Enterprises! I need assistance with fire safety solutions."
+Accessibility: aria-label "Contact Vellore Enterprises on WhatsApp"
+
+
+================================================================================
+COMPONENT: Command Palette (Search)
+================================================================================
+File: components/CommandPalette.js
+
+Type: Modal overlay / Command palette (Spotlight-style)
+Trigger: Ctrl+K keyboard shortcut OR clicking search icon in navbar
+Close: ESC key or clicking backdrop
+
+Layout:
+- Full-screen semi-transparent overlay
+- Centered panel with glass morphism styling
+
+Header:
+- Search icon (magnifying glass)
+- Text input: "Search products, pages, categories (e.g., 'abc', 'extinguisher')..."
+- ESC keyboard shortcut badge
+
+Results Area (when query is empty):
+- "Quick Navigation" section header
+- Quick links with icons:
+  - 🏠 Home → /
+  - 📦 Products → /products
+  - 🔧 AMC Services → /amc
+  - 🏢 About Us → /about
+  - 📞 Contact → /contact
+
+Results Area (when query has matches):
+- "Smart Results" section header (gold)
+- Up to 8 fuzzy-matched results, each showing:
+  - Icon (emoji based on type)
+  - Title (bold)
+  - Subtitle (description or route)
+  - Type badge: "page", "category", or "product" (gold badge)
+
+Results Area (no matches):
+- 🤖 emoji
+- "Our smart search couldn't find anything for '{query}'"
+- "Try broader terms or check spelling."
+
+Footer:
+- Keyboard shortcut hints: ↑↓ navigate | ↵ select | esc close
+
+Search Sources:
+- Pages (Home, Products, AMC Services, About Us, Contact)
+- Product categories (6 categories)
+- All products from Firestore (name, code, category, description)
+- Uses Fuse.js for fuzzy matching (threshold: 0.4)
+
+Keyboard Navigation:
+- Arrow Up/Down to navigate results
+- Enter to select/navigate
+- ESC to close
+
+
+================================================================================
+COMPONENT: Cart Drawer
+================================================================================
+File: components/CartDrawer.js
+
+Type: Slide-in drawer from right side
+Trigger: Clicking cart icon in navbar
+Close: ESC key, clicking backdrop, or close button
+Width: max 480px, full height
+
+Header:
+- Eyebrow: "Inquiry cart"
+- Title: "{count} selected item(s)"
+- Close button (X icon in circular border)
+
+Body (Empty State):
+- Centered content:
+  - Empty orb with "0"
+  - Title: "No products selected"
+  - Description: "Add products to build a WhatsApp inquiry with quantities and product details."
+  - "Browse products" button → /products
+
+Body (With Items):
+- Scrollable list of cart item cards, each showing:
+  - Product name (truncated)
+  - Product code (gold, uppercase)
+  - Unit price ("INR {price}")
+  - "Save" button (saves item for later)
+  - "Remove" button (removes from cart)
+  - Quantity controls: − / count / + (rounded pill)
+  - Line total ("INR {price × quantity}")
+
+- Order Notes section:
+  - Label: "Order notes"
+  - Textarea: "Special instructions, delivery preferences..."
+
+- Saved for Later section (if any):
+  - Eyebrow: "Saved for later"
+  - List of saved items with "Move to cart" button
+
+Footer (when items present):
+- Price breakdown:
+  - Subtotal: INR {amount}
+  - GST (18%): INR {amount}
+  - Estimated Total: INR {amount} (gold, bold)
+- "Proceed to WhatsApp checkout" button (green WhatsApp button with icon)
+- "Download PDF Quote" button (secondary, with download icon)
+- "Clear all items" text button
+
+
+================================================================================
+COMPONENT: Checkout Form (Modal)
+================================================================================
+File: components/checkout/CheckoutForm.js
+
+Type: Full-screen modal overlay
+Trigger: Clicking "Proceed to WhatsApp checkout" in cart drawer
+Close: Close button or backdrop
+
+Layout:
+- Glass panel, max-width 500px, centered
+
+Header:
+- Eyebrow: "Step 2 of 2"
+- Title: "Your Details"
+- Close button (X icon)
+
+Content:
+- Order summary card showing:
+  - "{count} product(s) selected"
+  - First 3 items listed (name + quantity)
+  - "+{n} more items" if more than 3
+
+Form Fields:
+- Name * (text input, placeholder: "Your full name")
+- Phone * (tel input, placeholder: "Your phone number")
+- Delivery Address (textarea, 3 rows, placeholder: "Your delivery address (optional)")
+- Order Notes (textarea, 2 rows, placeholder: "Special instructions (optional)")
+
+Submit Button:
+- "Send Order on WhatsApp" (green WhatsApp button with icon)
+
+Footer Text:
+- "Your order details will be sent to our WhatsApp for confirmation and pricing"
+
+Validation:
+- Name required
+- Phone required
+- Error messages shown in salmon/orange color
+
+On Submit:
+- Generates order number (VE-YYYYMMDD-HHMM format)
+- Constructs formatted WhatsApp message with:
+  - Company branding header
+  - Order number and date
+  - Customer details
+  - Full product list with codes, quantities, prices
+  - Price summary (subtotal, GST 18%, total) or "Pricing on request"
+  - Delivery notes
+  - Company contact footer
+- Opens WhatsApp with pre-filled message
+- Clears cart
+
+
+================================================================================
+COMPONENT: Breadcrumbs
+================================================================================
+File: components/Breadcrumbs.js
+
+Type: Navigation breadcrumb trail
+Used on: Products page, Product detail page
+
+Layout:
+- Horizontal list with "›" separators
+- Clickable links for all items except the last (current page)
+- Last item has aria-current="page"
+- Includes BreadcrumbList structured data (JSON-LD)
+
+
+================================================================================
+COMPONENT: Toast Notifications
+================================================================================
+File: components/ToasterProvider.js
+
+Type: Toast notification system (react-hot-toast)
+Position: Top-right of viewport
+Styles: Dark background, white text, custom styling matching app theme
+Used for: Success messages, error messages, loading indicators
+
+
+================================================================================
+PAGE: Home / Landing Page
+================================================================================
+Route: /
+File: app/page.js
+
+Purpose: Main landing page showcasing fire safety services, products, and company information. Designed to convert visitors into leads through multiple CTAs.
+
+---
+
+Section 1: Enterprise Hero
+- Background: Orbital animated dots (9 floating spans)
+- Layout: 2-column grid (content + visual)
+- LEFT COLUMN:
+  - Eyebrow: "Vellore's trusted fire safety partner"
+  - Heading (h1): "Fire protection with enterprise discipline." ("enterprise" in gold gradient)
+  - Lead paragraph: "Certified products, responsive service, and complete fire safety lifecycle support..."
+  - CTA Buttons (3):
+    - "Explore products" (primary) → /products
+    - "Request AMC" (secondary) → /amc
+    - Phone number (secondary) → tel: link
+  - Feature badges (4 cards in grid):
+    - "BIS Certified"
+    - "Site Survey"
+    - "AMC Reports"
+    - "24/7 Support"
+- RIGHT COLUMN: Hero visual card
+  - Radial gold gradient background
+  - Animated device visualization:
+    - Ring animation
+    - Core element
+    - "VE" label
+  - Hero facts (3 items):
+    - "Fast response" — "24/7 support channel"
+    - "Certified supply" — "Products and AMC"
+    - "Clear workflow" — "Survey to maintenance"
+  - Bottom pill badge: "Premium fire safety platform"
+
+---
+
+Section 2: Animated KPI Counters
+- Background: Border-y with subtle white background
+- Layout: 4-column grid
+- Animated counters (count up on scroll into view):
+  - 500+ — "Clients protected" — "Industrial, commercial, and residential"
+  - 10+ — "Years expertise" — "Fire safety consultation and service"
+  - 24/7 — "Emergency support" — "Rapid response phone and WhatsApp"
+  - 100% — "Compliance focus" — "Products aligned to BIS standards"
+
+---
+
+Section 3: Trusted Industries
+- Eyebrow: "Trusted by"
+- Title: "Serving high-responsibility environments"
+- Description: "Our products and services protect people and assets across Tamil Nadu's most critical facilities."
+- Layout: 4-column grid of industry cards (reveal animation):
+  - Factories
+  - Hospitals
+  - Schools
+  - Commercial towers
+  - Warehouses
+  - Hotels
+  - Residential communities
+  - Government facilities
+- Each card: Rounded border, hover effect (gold border + gold tint)
+
+---
+
+Section 4: Product Categories
+- Background: #070707
+- Eyebrow: "Product range"
+- Title: "Complete fire safety categories"
+- Description: "Browse our full range of certified fire protection products, each category backed by industry-leading brands."
+- CategoryShowcase component: 6 category cards in 3-column grid:
+  - Fire Extinguishers — "CO2, ABC, foam, water, and clean agent units for every fire class"
+  - Fire Alarms — "Smoke detectors, panels, call points, and addressable systems"
+  - Hydrant Systems — "Hoses, nozzles, valves, pumps, and full hydrant networks"
+  - Suppression Systems — "Automatic gas, foam, and water mist suppression systems"
+  - Fire Stop — "Sealants, wraps, pillows, and penetration firestop solutions"
+  - Safety Gear — "PPE, helmets, boots, gloves, and fire proximity suits"
+- Each card: Icon badge, title, description, "Browse products →" on hover
+- Links to /products?category={name}
+
+---
+
+Section 5: Why Choose Us
+- Eyebrow: "Advantages"
+- Title: "Why facilities choose Vellore Enterprises"
+- Description: "We combine local availability with professional processes..."
+- Layout: 3-column grid (6 cards with reveal animation):
+  - 🛡️ Certified Products — "Every product we supply is sourced from certified manufacturers..."
+  - ⚡ Rapid Response — "24/7 emergency support with same-day response..."
+  - 📋 Complete Documentation — "Detailed inspection reports, compliance certificates..."
+  - 🔧 End-to-End Service — "From initial site survey through installation, training..."
+  - 🏭 Industry Expertise — "Specialized solutions for factories, hospitals, schools..."
+  - 💰 Transparent Pricing — "Clear quotations, no hidden charges..."
+- Each card: Emoji icon in gold-tinted badge, title (bold), description
+
+---
+
+Section 6: Company Timeline
+- Background: #070707
+- Eyebrow: "Our journey"
+- Title: "Building trust since 2014"
+- Description: "From a local fire safety supplier to a complete protection partner..."
+- Timeline component:
+  - Desktop: Horizontal timeline with clickable year markers
+    - 2014 — Foundation
+    - 2016 — Service Expansion
+    - 2019 — Industrial Growth
+    - 2022 — Digital Transformation
+    - Today — Complete Protection Partner
+    - Active year: gold dot with glow, gold text
+    - Content panel below: year, title, description
+  - Mobile: Vertical timeline with expandable cards
+
+---
+
+Section 7: Certifications
+- Background: Border-y with subtle white tint
+- Eyebrow: "Certifications and compliance"
+- Badges (flex row, centered):
+  - BIS Certified
+  - ISO 9001
+  - IS 15683
+  - IS 2190
+  - NFPA Compliant
+  - TAC Approved
+
+---
+
+Section 8: Fire Protection Process
+- Eyebrow: "Delivery model"
+- Title: "A clear path from risk to readiness"
+- Description: "Our systematic four-step process ensures complete coverage..."
+- Layout: 4-column grid of process step cards:
+  - 🔍 01 — Survey — "On-site walkthrough, risk mapping, equipment inventory, and requirement capture."
+  - 📐 02 — Design — "Equipment selection, placement strategy, coverage analysis, and compliance planning."
+  - 🚀 03 — Deploy — "Product supply, professional installation, system testing, and team training."
+  - 🔧 04 — Maintain — "Scheduled AMC visits, refilling, documentation, and emergency response support."
+
+---
+
+Section 9: Featured Products (Dynamic)
+- Background: #070707
+- Eyebrow: "Live catalog"
+- Title: "Featured protection equipment"
+- Description: "Products are synchronized in real-time from the admin dashboard through Firestore."
+- Layout: 4-column grid of product cards (from Firestore)
+- Each product card:
+  - Product image (rounded, 160px height) or placeholder
+  - Category eyebrow
+  - Product name (hover → gold)
+  - Price in gold ("INR {price}")
+  - Description (2-line clamp)
+  - "View details →" link (gold with arrow)
+- "View all products" button → /products
+- Shows up to 4 featured products (or first 4 if none featured)
+- Hidden if loading or no products
+
+---
+
+Section 10: AMC Plans Preview
+- Eyebrow: "Annual maintenance"
+- Title: "AMC plans for every facility"
+- Description: "Preventive maintenance keeps your fire safety systems inspection-ready..."
+- Layout: 3-column grid of pricing cards:
+  - Essential — "Custom" price
+    - Target: "Small offices, shops, and residential"
+    - Features: Annual inspection, Basic compliance report, Refilling coordination, Phone support
+    - "Request quote" (secondary button) → /amc
+  - Professional — "Custom" price — ★ "Most Popular" badge
+    - Target: "Commercial buildings and institutions"
+    - Features: Quarterly servicing, Full compliance documentation, Priority emergency support, Equipment testing, Detailed reports
+    - "Request quote" (primary button) → /amc
+    - Highlighted border with gold glow
+  - Enterprise — "Custom" price
+    - Target: "Factories, campuses, multi-site"
+    - Features: Custom visit schedule, Asset lifecycle register, Emergency response planning, Dedicated account manager, 24/7 priority line, Regulatory liaison
+    - "Request quote" (secondary button) → /amc
+
+---
+
+Section 11: PASS Method (Interactive)
+- Background: #070707
+- Eyebrow: "Training standard"
+- Title: "The PASS method, made memorable"
+- Description: "A simple operating model that helps teams respond clearly..."
+- Layout: 2-column grid (visual + steps)
+- LEFT: Animated visual card
+  - Rotating rings animation
+  - Central card: "Portable extinguisher" label, "PASS" in large gold text
+  - Bottom pill: "Low-latency static training visual"
+- RIGHT: 4 interactive step cards (auto-cycles every 2.6s, clickable):
+  - P — Pull the pin — "Break the tamper seal while holding the extinguisher upright."
+  - A — Aim at the base — "Target the fuel source instead of the visible flame tips."
+  - S — Squeeze slowly — "Apply steady pressure to release the extinguishing agent."
+  - S — Sweep side to side — "Cover the base until the fire is out, then watch for re-ignition."
+  - Active card: Gold border, gold background tint, gold shadow
+
+---
+
+Section 12: Testimonials (Carousel)
+- Eyebrow: "Client confidence"
+- Title: "What our clients say"
+- Description: "Hear from facility managers, safety officers, and operations heads..."
+- Carousel component:
+  - Auto-advances every 5 seconds (pauses on hover)
+  - Each slide:
+    - Large quote icon (gold tint)
+    - Quote text (large, relaxed leading)
+    - Author info: Initials avatar (gold gradient circle) + Name + Industry
+  - 5 testimonials:
+    - Manufacturing Facility Manager — Industrial
+    - Commercial Building Operator — Commercial
+    - School Campus Administrator — Education
+    - Hospital Safety Officer — Healthcare
+    - Warehouse Operations Head — Logistics
+  - Controls:
+    - Previous/Next arrow buttons (circular, bottom-left)
+    - Dot indicators (bottom-right, active dot is gold/wider)
+
+---
+
+Section 13: FAQ Accordion
+- Background: #070707
+- Eyebrow: "Questions"
+- Title: "Frequently asked questions"
+- Description: "Common questions about our products, services, and support."
+- 6 expandable FAQ items:
+  - "What types of fire safety equipment do you supply?"
+  - "Do you provide installation services?"
+  - "What is covered under your AMC plans?"
+  - "Which areas do you serve?"
+  - "How do I get a quote?"
+  - "Do you offer 24/7 emergency support?"
+- Each item: Click to expand, shows answer text, + icon rotates to ×
+
+---
+
+Section 14: Emergency CTA Bar
+- Background: Red gradient with red border
+- Layout: Horizontal flex (mobile: stacked)
+- LEFT: 🚨 emoji + "Fire safety emergency?" + "Call our 24/7 emergency line for immediate assistance"
+- RIGHT: Two buttons:
+  - "Call +91 80722 64972" (primary) → tel: link
+  - "Contact us" (secondary) → /contact
+
+---
+
+Section 15: Contact CTA
+- Glass panel container, centered text
+- Eyebrow: "Get started"
+- Heading: "Ready to secure your facility?"
+- Description: "Talk to our team for certified equipment, site surveys, installation, AMC, and 24/7 emergency support..."
+- Buttons:
+  - "Call +91 80722 64972" (primary) → tel: link
+  - "Send message" (secondary) → /contact
+
+
+================================================================================
+PAGE: Products Catalog
+================================================================================
+Route: /products
+File: app/products/page.js
+
+Purpose: Browsable, searchable, filterable product catalog with inquiry cart functionality.
+
+---
+
+Section 1: Page Header
+- Background: Gradient from #050505 to #0a0a0a, bottom border
+- Breadcrumbs: Home › Products
+- Heading (h1): "Product Catalog"
+- Lead paragraph: "Browse certified fire safety products, add items to your inquiry cart, and send the final list to WhatsApp."
+
+---
+
+Section 2: Product Browser (2-column layout)
+
+LEFT SIDEBAR (width: 288px on desktop):
+- Search Catalog:
+  - Eyebrow: "Search Catalog"
+  - Search input with magnifying glass icon
+  - Placeholder: "Search products, codes..."
+  - Searches: name, description, product code
+
+- Categories:
+  - Eyebrow: "Categories"
+  - Vertical button list:
+    - "All Products" with total count badge
+    - Each category from Firestore with product count badge
+    - Active category: gold text, gold background tint
+    - Supports URL parameter: ?category=...
+
+- Sort by Price:
+  - Eyebrow: "Sort by Price"
+  - Select dropdown:
+    - "Default relevance"
+    - "Price: Low to High"
+    - "Price: High to Low"
+
+- Bulk Orders CTA card:
+  - Gold-tinted border card
+  - Title: "Bulk Orders" (gold)
+  - Text: "Need equipment for a large facility? Contact us for specialized enterprise pricing."
+  - "Get quote" button → /contact
+
+RIGHT CONTENT AREA:
+- Toolbar:
+  - LEFT: Category title + result count ("Showing {n} results")
+  - RIGHT: View mode toggle (grid/list icons, pill container)
+
+- States:
+  - Loading: 6 skeleton cards in grid/list
+  - Error: Empty state with "!" orb, "Products could not load", error message
+  - Empty (no matches): Empty state with "0" orb, "No products found", "Clear all filters" button
+  
+- Product Grid (default) or List view:
+  - Each product card:
+    - Product image (or "IMG" placeholder if no image)
+    - Category eyebrow
+    - Product name (hover → gold)
+    - "Featured" badge (if featured)
+    - Product code (monospace, small) or "NO SKU"
+    - Price ("INR {price}") or "Quote" (in gold)
+    - Description (2-line clamp)
+    - Action buttons (2-column grid):
+      - "Add to cart" (primary button)
+      - "Buy now" (WhatsApp green button) — opens WhatsApp with product details
+      - "View details" (secondary button, full width) → /products/{slug}
+
+- Floating Cart Bar (appears when cart has items):
+  - Fixed bottom of viewport, centered pill
+  - "{count} item(s) in inquiry cart"
+  - "Send cart on WhatsApp" button (green)
+
+
+================================================================================
+PAGE: Product Detail
+================================================================================
+Route: /products/[slug]
+File: app/products/[slug]/page.js
+
+Purpose: Detailed view of a single product with specifications, quantity selector, and related products.
+
+---
+
+Loading State:
+- Centered spinner (gold border, animated)
+- Min height 60vh
+
+Not Found:
+- Triggers Next.js notFound() → shows 404 page
+
+---
+
+Main Content (2-column grid):
+
+LEFT — Visual Area:
+- Product image container:
+  - Large rounded card (32px radius) with radial gold gradient background
+  - Image with object-fit: contain
+  - Loading spinner while image loads
+  - Camera emoji placeholder if no image
+- Info badges below image (2-column grid):
+  - Certification: "BIS Approved" (gold text)
+  - Availability: "Ready to deploy" (green text)
+
+RIGHT — Details Area:
+- Category eyebrow
+- Product name (h1, large display font)
+- SKU badge: "SKU: {code}" (gold badge) or "SKU: N/A"
+- Price: "₹{price}" (gold, large)
+- Description section:
+  - Heading: "Description"
+  - Full product description (whitespace-preserved)
+- Quantity & Cart section (bordered card):
+  - "Quantity" label with stepper: − | count | + (rounded pill)
+  - "Add to inquiry cart" button (primary, full width)
+- Specifications table:
+  - Category: {category}
+  - Product Code: {code}
+  - Compliance: IS 15683 / BIS
+  - Warranty: 1 Year standard
+
+---
+
+Related Products Section:
+- Heading: "Similar Equipment"
+- 4-column grid of related product cards (same category, different product)
+- Each card:
+  - Product image (160px height) or camera placeholder
+  - Product name (hover → gold)
+  - Product code (small)
+  - Price in gold
+  - Links to product detail page
+
+---
+
+Breadcrumbs:
+- Home › Products › {Category} › {Product Name}
+
+SEO:
+- Product structured data (JSON-LD): name, description, image, sku, category, offers
+
+
+================================================================================
+PAGE: AMC (Annual Maintenance Contracts)
+================================================================================
+Route: /amc
+File: app/amc/page.js
+
+Purpose: Information about AMC services and request form for maintenance contracts.
+
+---
+
+Section 1: Hero
+- Background: hero-shell style, min-height 74svh
+- Centered layout
+- Eyebrow: "Annual maintenance contracts"
+- Heading (h1): "Keep protection systems inspection-ready."
+- Lead paragraph: "AMC programs for extinguishers, alarms, hydrants, sprinklers, suppression systems, and multi-site fire safety operations."
+- Buttons:
+  - "Request quote" (primary) → scrolls to #amc-form
+  - Phone number (secondary) → tel: link
+
+---
+
+Section 2: Service Plans
+- Eyebrow: "Plans"
+- Title: "Service models tailored to site risk"
+- Description: "AMC pricing depends on system type, quantity, visit frequency, location, and documentation requirements."
+- 3-column grid of plan cards:
+  - Essential:
+    - For: "Small offices, shops, and residential facilities"
+    - Features: Annual inspection, Basic readiness report, Refilling coordination
+  - Professional:
+    - For: "Commercial buildings and institutions"
+    - Features: Quarterly service, Compliance documentation, Priority support
+  - Enterprise:
+    - For: "Factories, campuses, and multi-system sites"
+    - Features: Custom visit schedule, Asset register, Emergency response planning
+
+---
+
+Section 3: Process
+- Background: #070707
+- Eyebrow: "Process"
+- Title: "From request to recurring maintenance"
+- 4-column grid of numbered process steps:
+  - 1 — Request — "Submit site and system details."
+  - 2 — Assess — "We evaluate quantity, location, and risk profile."
+  - 3 — Plan — "You receive a tailored AMC scope and service frequency."
+  - 4 — Maintain — "Scheduled visits, reports, and priority response begin."
+
+---
+
+Section 4: AMC Request Form (id="amc-form")
+- 2-column layout
+
+LEFT COLUMN:
+- Eyebrow: "Who we maintain"
+- Heading: "AMC coverage for high-responsibility sites."
+- Description paragraph about routine checks, refilling, readiness reports
+- Industries grid (2-column):
+  - Factories, Hospitals, Schools, Commercial towers
+  - Warehouses, Hotels, Residential communities, Government facilities
+
+RIGHT COLUMN — Form Panel:
+- Submitted State:
+  - "OK" orb
+  - Title: "AMC request submitted"
+  - Description: "Our team will review your details and contact you..."
+  - "Call now" button
+  
+- Form State:
+  - Eyebrow: "Request quote"
+  - Heading: "Tell us about your site"
+  - Fields (2-column where applicable):
+    - Company name * (text)
+    - Contact person (text)
+    - Phone * (tel)
+    - Email (email)
+    - Location (text)
+    - System type * (select dropdown):
+      - Fire Extinguishers
+      - Fire Alarm System
+      - Fire Hydrant System
+      - Fire Suppression System
+      - Fire Sprinkler System
+      - Multiple Systems
+    - AMC requirements (textarea, 5 rows)
+  - "Submit AMC request" button (primary) / "Submitting..." when loading
+  
+  Validation:
+  - Company name required
+  - Phone required
+  - System type required
+  - Error messages in salmon/orange
+  
+  On Submit:
+  - Saves to Firestore 'amc_requests' collection
+  - Fallback: Opens WhatsApp with pre-filled message if Firestore fails
+
+
+================================================================================
+PAGE: About Us
+================================================================================
+Route: /about
+File: app/about/page.js
+
+Purpose: Company information, values, history, and capabilities overview.
+
+SEO:
+- Title: "About Us"
+- Description: "Learn about Vellore Enterprises..."
+
+---
+
+Section 1: Hero
+- Min-height: 76svh
+- 2-column grid layout
+- LEFT:
+  - Eyebrow: "About Vellore Enterprises"
+  - Heading (h1): "A fire safety partner built for trust."
+  - Lead paragraph: "We help homes, businesses, institutions, and industrial sites reduce fire risk..."
+  - Buttons:
+    - "Talk to our team" (primary) → /contact
+    - "Explore products" (secondary) → /products
+- RIGHT: 2×2 grid of metric cards:
+  - 500+ — "Clients served" — "Across Vellore and Tamil Nadu"
+  - 1000+ — "Systems supported" — "Products, installs, and AMC"
+  - 24/7 — "Support" — "Emergency response channel"
+  - 10+ — "Years" — "Fire safety service experience"
+
+---
+
+Section 2: Values
+- Eyebrow: "Purpose"
+- Title: "Safety is the operating system"
+- Description: "Our mission, vision, and values are built around one practical belief..."
+- 3-column grid of value cards:
+  - Precision — "Every recommendation is tied to site risk, compliance needs, and long-term maintainability."
+  - Reliability — "We prioritize equipment readiness, documentation, and fast service response."
+  - Clarity — "Clients receive practical guidance, transparent communication, and clear next steps."
+
+---
+
+Section 3: History / Milestones
+- Background: #070707
+- Eyebrow: "History"
+- Title: "From product supply to complete protection lifecycle"
+- 4-column grid of numbered milestone cards:
+  - 01 — Foundation
+  - 02 — Expansion
+  - 03 — Digital operations
+  - 04 — Today
+
+---
+
+Section 4: Industries & Capabilities
+- Eyebrow: "Coverage"
+- Title: "Industries and services we support"
+- Description: "Our team serves facilities where safety, uptime, and compliance have to work together."
+- 2-column layout:
+  - LEFT glass panel: "Industries" heading
+    - 2-column grid: Factories, Hospitals, Schools, Commercial towers, Warehouses, Hotels, Residential communities, Government facilities
+  - RIGHT glass panel: "Capabilities" heading
+    - 2-column grid: All 8 services listed
+
+---
+
+Section 5: CTA
+- Background: #070707
+- Glass panel, centered
+- Eyebrow: "Why choose us"
+- Heading: "Certified products, accountable service, and clear communication."
+- Description paragraph
+- Buttons:
+  - "Request AMC" (primary) → /amc
+  - Phone number (secondary) → tel: link
+
+
+================================================================================
+PAGE: Contact
+================================================================================
+Route: /contact
+File: app/contact/page.js
+
+Purpose: Contact information and inquiry form with WhatsApp fallback.
+
+---
+
+Section 1: Hero
+- Min-height: 70svh
+- Centered layout
+- Eyebrow: "Contact"
+- Heading (h1): "Talk to a fire safety specialist."
+- Lead paragraph: "Send a message, call directly, or reach us on WhatsApp for products, AMC, site surveys, and emergency fire safety support."
+
+---
+
+Section 2: Contact Info + Form (2-column layout)
+
+LEFT COLUMN — Contact Information:
+- 4 stacked cards:
+  - Address: "164, Vellore Road, Kangeyanallur, Vellore, Tamil Nadu 632006"
+  - Phone: "+91 80722 64972 / +91 90874 05584"
+  - Email: "velloreenterprises7@gmail.com"
+  - Hours: "Mon - Sat, 9:00 AM - 6:00 PM. Emergency support available."
+- Google Maps embed:
+  - Location: Kangeyanallur, Vellore, Tamil Nadu 632006
+  - Height: 288px
+
+RIGHT COLUMN — Enquiry Form:
+- Submitted State:
+  - "OK" orb
+  - Title: "Message received"
+  - Description: "Our team will respond soon. For urgent requirements, call directly."
+  - "Call now" button
+
+- Form State:
+  - Eyebrow: "Enquiry form"
+  - Heading: "Send your requirement"
+  - Fields:
+    - Name * (text)
+    - Phone * (tel) | Email (email) — side by side
+    - Subject (text)
+    - Message * (textarea, 5 rows)
+  - "Send message" button (primary) / "Sending..." when loading
+
+  Validation:
+  - Name required
+  - Phone required
+  - Message required
+  
+  On Submit:
+  - Saves to Firestore 'contact_enquiries' collection
+  - Fallback: Opens WhatsApp with pre-filled message if Firestore fails
+
+---
+
+Section 3: Contact FAQ
+- Background: #070707
+- Eyebrow: "FAQ"
+- Heading: "Common contact questions"
+- 3-column grid of Q&A cards:
+  - "How quickly do you respond?" — "Most enquiries receive a response within two business hours..."
+  - "Do forms work without Firebase?" — "Yes. If Firestore is unavailable, the form opens a prepared WhatsApp message."
+  - "Do you visit sites?" — "Yes. We provide site surveys and recommend equipment, installation, and AMC plans."
+
+
+================================================================================
+PAGE: Admin Portal — Login Screen
+================================================================================
+Route: /velloreadmin
+File: app/velloreadmin/page.js
+
+Purpose: Authentication gate for admin dashboard. Requires whitelisted Google account.
+
+---
+
+Loading State:
+- Full-screen centered spinner
+- Gold border spinner animation
+- Text: "Verifying access"
+
+---
+
+Login Screen (when not authenticated):
+- Full-screen centered layout
+- Glass panel card (max-width: 448px):
+  - VE logo icon (gold gradient, large, with glow shadow)
+  - Title: "Admin Portal"
+  - Description: "Sign in with your whitelisted Google account to access the enterprise dashboard."
+  - Error alert (if present): Red-tinted border card with error message
+  - "Sign in with Google" button:
+    - White background, black text
+    - Google logo SVG (4-color G icon)
+    - Full width
+  - "Return to website" ghost button → /
+
+---
+
+Unauthorized Error:
+- Message: "Unauthorized: Your email is not whitelisted for admin access."
+- Shown in red error alert box
+
+
+================================================================================
+PAGE: Admin Dashboard (Authenticated)
+================================================================================
+Route: /velloreadmin?tab=dashboard (default)
+File: components/admin/AdminLayout.js + components/admin/DashboardTab.js
+
+Purpose: Admin overview with key metrics and recent activity log.
+
+---
+
+Admin Layout (wraps all admin tabs):
+
+MOBILE HEADER (below lg):
+- VE logo icon + "Admin" title
+- Hamburger menu toggle button
+
+SIDEBAR (260px, sticky on desktop):
+- Header: VE logo icon + "Admin" title + "Enterprise dashboard" subtitle (gold)
+- Navigation tabs (vertical):
+  - 📊 Dashboard
+  - 📦 Products
+  - 🏷️ Categories
+  - 📩 Inquiries
+  - 🔧 AMC
+  - ⚙️ Settings
+  - Active tab: highlighted style (admin-sidebar-link-active)
+- User info card (bottom):
+  - "Signed in as" label
+  - User email
+  - "⚠ Offline mode" warning (if offline)
+  - "Logout" button (secondary)
+
+CONTENT AREA:
+- Padding: 32px (desktop), 16px (mobile)
+
+---
+
+Dashboard Tab Content:
+
+Header:
+- Title: "Dashboard"
+- Subtitle: "Enterprise overview and quick metrics."
+
+Metrics Grid (4-column):
+- Total Products: {count} — "{n} featured" (gold)
+- Categories: {count} — "{n} active" (green)
+- Inquiries: "-" — "Building in Phase 2"
+- AMC Requests: "-" — "Building in Phase 2"
+
+Recent Activity Panel:
+- Title: "Recent Activity"
+- Loading state: 3 skeleton lines
+- Empty state: 📋 icon, "No recent activity logged yet."
+- Activity list (up to 10 entries):
+  - Each entry: icon (based on action type) + details + action label + time ago
+  - Action types and icons:
+    - PRODUCT_CREATED → 📦
+    - PRODUCT_UPDATED → ✏️
+    - PRODUCT_DELETED → 🗑️
+    - QUOTE_DOWNLOADED → 📄
+    - Other → ⚡
+
+
+================================================================================
+PAGE: Admin — Products Tab
+================================================================================
+Route: /velloreadmin?tab=products
+File: components/admin/ProductsTab.js
+
+Purpose: Full CRUD management for the product catalog.
+
+---
+
+Section 1: Product Editor Form
+- Title: "Add New Product" or "Edit Product" (when editing)
+- Form layout: 2-column grid
+
+Fields:
+- Product Name * (full width, text, placeholder: "e.g., 9KG ABC Fire Extinguisher")
+- Category * (select dropdown from Firestore categories)
+  - Quick Add Category: inline text input + "Add" button
+- Product Code (SKU) (text, placeholder: "e.g., VE-ABC-09")
+- Description (full width, textarea, 4 rows, placeholder: "Detailed product specifications...")
+- Price (INR) (number, placeholder: "e.g., 2500")
+- Stock Quantity (number, placeholder: "e.g., 50", min: 0)
+- Featured Product (full width, checkbox: "Show on homepage")
+- Product Image (full width):
+  - Image preview (96x96px) with remove button (×), OR placeholder (📷 in dashed border)
+  - File upload input (JPG, PNG, WebP, max 5MB)
+  - Uploads to Cloudinary via signed upload
+- Submit: "Add Product" / "Update Product" / "Saving..." button (primary)
+- "Cancel" button (secondary, shown when editing)
+
+---
+
+Section 2: Product Catalog List
+- Header row:
+  - Title: "Catalog ({count})"
+  - Search input with icon: "Search products..."
+- Loading state: 3 skeleton cards in grid
+- Empty state: 🔍 orb, "No products found", "Try adjusting your search terms or add a new product."
+- Product grid (2-3 columns):
+  - Each product card:
+    - Image thumbnail (80x80px) or 📦 placeholder
+    - Product name (bold, truncated)
+    - Category (gold, uppercase)
+    - Product code or "No SKU"
+    - Price: ₹{price}
+    - "Featured" badge (if featured)
+    - Action buttons:
+      - ✏️ Edit button (loads product into editor)
+      - 🗑️ Delete button (confirmation dialog)
+
+---
+
+Actions:
+- Add product: Saves to Firestore 'products' collection, logs activity
+- Edit product: Updates Firestore document, logs activity
+- Delete product: Deletes with confirmation, logs activity
+- Search: Filters by name, category, or code (client-side)
+
+
+================================================================================
+PAGE: Admin — Categories Tab
+================================================================================
+Route: /velloreadmin?tab=categories
+File: components/admin/CategoriesTab.js
+
+Purpose: Manage product categories (CRUD + visibility + migration).
+
+---
+
+Section 1: Category Editor Form
+- Title: "Add New Category" or "Edit Category"
+- Form layout: 2-column grid
+
+Fields:
+- Category Name * (text, placeholder: "e.g., Fire Safety Signs")
+- URL Slug (text, placeholder: "Auto-generated if empty")
+- Emoji Icon (text, placeholder: "e.g., 🪧", max 4 chars)
+- Visibility (checkbox: "Show in navigation and filters")
+- Description (full width, textarea, 2 rows, placeholder: "Short description for SEO and catalog headers")
+- Submit: "Add Category" / "Update Category" / "Saving..." (primary)
+- "Cancel" button (secondary, shown when editing)
+
+---
+
+Section 2: Category List
+- Header:
+  - Title: "Manage Categories"
+  - "Migrate Defaults to Database" button (shown if no custom categories exist but defaults do)
+- Loading state: 3 skeleton lines
+- Category list (vertical):
+  - Each category row:
+    - Icon badge (emoji or 🏷️ fallback)
+    - Category name (bold)
+    - "Default" badge (if hardcoded default)
+    - "Hidden" badge (if not visible)
+    - Slug: "/{slug}"
+    - Action buttons (only for non-default):
+      - ✏️ Edit
+      - 🗑️ Delete (with confirmation: warns about product categorization)
+    - Default categories: dimmed, no actions
+
+---
+
+Migration Feature:
+- Copies hardcoded PRODUCT_CATEGORIES into Firestore
+- Uses batch write for efficiency
+
+
+================================================================================
+PAGE: Admin — Inquiries Tab
+================================================================================
+Route: /velloreadmin?tab=inquiries
+File: components/admin/InquiriesTab.js
+
+Purpose: CRM-style management of customer contact inquiries.
+
+---
+
+Header:
+- Title: "Inquiries & CRM"
+- Subtitle: "Manage customer contact requests, quotes, and leads."
+- Filter bar (pill toggle):
+  - ALL | NEW | IN_PROGRESS | COMPLETED
+
+---
+
+Layout: 2-column grid (list + detail)
+
+LEFT — Inquiry List (scrollable, 70vh):
+- Loading: 4 skeleton cards
+- Empty: 📬 icon, "No inquiries found for this filter."
+- Inquiry cards (clickable):
+  - Contact name or "Unknown Contact"
+  - Status badge (color-coded):
+    - New → blue
+    - In Progress → yellow
+    - Completed → green
+  - Message preview (truncated)
+  - Time ago
+
+RIGHT — Inquiry Detail Panel (70vh):
+- Empty state: 🗂️ icon, "Select an inquiry to view details"
+- Selected inquiry:
+  - Header:
+    - Contact name
+    - Status dropdown (New / In Progress / Completed)
+    - 🗑️ Delete button
+  - Contact details grid (2×2):
+    - Email (clickable mailto:)
+    - Phone (clickable tel:)
+    - Company
+    - Type (General, etc.)
+  - Message body (dark card, pre-wrapped)
+  - Requested Items (if cart items exist):
+    - List of items with name and quantity
+
+
+================================================================================
+PAGE: Admin — AMC Tab
+================================================================================
+Route: /velloreadmin?tab=amc
+File: components/admin/AMCTab.js
+
+Purpose: Manage AMC (Annual Maintenance Contract) requests.
+
+---
+
+Header:
+- Title: "AMC Management"
+- Subtitle: "Manage annual maintenance contracts and service requests."
+- Filter bar (pill toggle):
+  - ALL | PENDING | SCHEDULED | COMPLETED
+
+---
+
+Layout: 2-column grid (list + detail)
+
+LEFT — AMC Request List (scrollable, 70vh):
+- Loading: 4 skeleton cards
+- Empty: 🔧 icon, "No AMC requests found for this filter."
+- Request cards (clickable):
+  - Company/facility name or "Unknown Facility"
+  - Status badge (color-coded):
+    - Pending → yellow
+    - Scheduled → blue
+    - Completed → green
+  - System type or "General Maintenance"
+  - Location + time ago
+
+RIGHT — AMC Detail Panel (70vh):
+- Empty state: 📝 icon, "Select a request to view details"
+- Selected request:
+  - Header:
+    - Company/facility name
+    - Status dropdown (Pending / Scheduled / Completed)
+    - 🗑️ Delete button
+  - Contact details grid (2×2):
+    - Contact Person
+    - Phone (clickable tel:)
+    - Location
+    - System Type
+  - Requirements/Notes (dark card, pre-wrapped)
+  - "Email Customer" button (opens mailto:)
+
+
+================================================================================
+PAGE: Admin — Settings Tab
+================================================================================
+Route: /velloreadmin?tab=settings
+File: components/admin/SettingsTab.js
+
+Purpose: Admin profile management and homepage banner CMS.
+
+---
+
+Header:
+- Title: "Settings & CMS"
+- Subtitle: "Platform configuration, admin profile, and media management."
+
+---
+
+Layout: 2-column grid
+
+LEFT — Admin Profile Card:
+- Title: "Admin Profile"
+- Email Address: {user.email}
+- Access Level: "Super Admin" (gold)
+- "Sign out" button (secondary, full width)
+
+RIGHT — Banner CMS Card:
+- Title: "Banner CMS"
+- Loading state: 2 pulsing skeleton blocks
+- Home Hero Image:
+  - Image preview (96px height) with remove button, or file upload
+  - File input for upload
+- Promo Banner:
+  - Image preview (96px height) with remove button, or file upload
+  - File input for upload
+- "Save Banners" button (primary, full width)
+
+
+================================================================================
+PAGE: 404 — Not Found
+================================================================================
+Route: Any unmatched route
+File: app/not-found.js
+
+Purpose: Custom 404 error page.
+
+SEO:
+- Title: "Page Not Found"
+
+Layout:
+- Full-screen centered (error-page class)
+- Error card:
+  - Large "404" text (decorative)
+  - Title: "Page not found"
+  - Description: "The page you are looking for may have been moved, renamed, or is temporarily unavailable."
+  - Buttons:
+    - "Back to home" (primary) → /
+    - "Browse products" (secondary) → /products
+    - "Call us" (secondary) → tel: link
+
+
+================================================================================
+PAGE: 500 — Global Error
+================================================================================
+Route: Triggered by runtime errors
+File: app/error.js
+
+Purpose: Global error boundary page.
+
+Layout:
+- Full-screen centered (error-page class)
+- Error card:
+  - Large "500" text (decorative)
+  - Title: "Something went wrong"
+  - Description: "An unexpected error occurred. Our team has been notified."
+  - Buttons:
+    - "Try again" (primary) → calls reset() function
+    - "Back to home" (secondary) → /
+
+
+================================================================================
+PAGE: Loading
+================================================================================
+Route: Shown during page transitions
+File: app/loading.js
+
+Purpose: Global loading indicator for route transitions.
+
+Layout:
+- Full-screen centered, black background (#050505)
+- Gold border spinner (animated ring)
+- Text: "Loading" (condensed font, uppercase, tracked)
+
+
+================================================================================
+COMPONENT: Error Boundary (Client-Side)
+================================================================================
+File: components/ErrorBoundary.js
+
+Type: React class component error boundary (currently commented out in layout)
+
+Layout:
+- Full-screen centered (error-page class)
+- Error card:
+  - "!" orb (empty-orb style)
+  - Title: "Something went wrong"
+  - Description: Custom fallbackMessage or default
+  - Buttons:
+    - "Try again" (primary) → resets error state
+    - "Go home" (secondary) → /
+
+
+================================================================================
+SHARED UI PRIMITIVES
+================================================================================
+File: components/ui.js
+
+Section Component:
+- Wraps content sections with consistent layout
+- Scroll-reveal animation (fade in on viewport entry)
+- Props: eyebrow, title, description, className, id
+- Renders: section > .section-heading > eyebrow + heading + description
+
+Button Component:
+- Universal button/link component
+- Variants: primary, secondary, ghost, whatsapp
+- Supports: href (renders as Link or <a>), or no href (renders as <button>)
+- External links (http, tel:, mailto:) render as <a>
+
+MetricCard Component:
+- Displays a metric with value, label, and detail text
+- Used in About page hero
+
+SkeletonGrid Component:
+- Loading placeholder grid
+- Configurable count (default: 8)
+- Shows skeleton-card placeholders
+
+EmptyState Component:
+- Generic empty state display
+- "VE" orb, title, text, optional action button
+
+
+================================================================================
+DESIGN TOKENS & CURRENT THEME SUMMARY
+================================================================================
+
+Color Palette (Dark Theme):
+- Background primary: #050505 (near-black)
+- Background secondary: #070707
+- Background tertiary: #0a0a0a
+- Text primary: white
+- Text secondary: white/70 (rgba)
+- Text muted: white/55, white/50, white/40
+- Accent gold: #c9a227 (primary gold)
+- Accent gold light: #f5d76e (hover/highlight gold)
+- Accent gold dark: #8b6914 (gradient end)
+- Error/danger: #f04418, #ffb199 (text)
+- Success/WhatsApp green: #25d366
+- Surface: white/[0.04], white/[0.03] (glass effect)
+- Borders: white/10
+
+Typography:
+- Display font: font-display (for headings)
+- Condensed font: font-condensed (for labels, badges, counters)
+- Base: System sans-serif
+
+Border Radius:
+- Cards: rounded-2xl (16px), rounded-3xl (24px)
+- Buttons: rounded-full (pill shape)
+- Large panels: rounded-[28px], rounded-[32px], rounded-[40px]
+
+Shadows:
+- Card shadows: shadow-[0_30px_120px_rgba(0,0,0,.42)]
+- Button shadows: shadow-lg, shadow-white/10
+
+Effects:
+- Glass morphism: backdrop-blur-xl, backdrop-blur-2xl
+- Noise texture overlay on body
+- Radial gold gradient backgrounds
+- Scroll-reveal animations
+- Orbital floating dots (hero)
+
+Spacing:
+- Section padding: section-shell class
+- Container widths: container-wide, container-pro, container-narrow
+
+
+================================================================================
+DESIGN OBJECTIVES FOR REDESIGN
+================================================================================
+
+The application should be redesigned with:
+
+1. LIGHT THEME by default (white/light gray backgrounds)
+2. Modern, clean, professional UI
+3. Intuitive navigation with clear visual hierarchy
+4. Excellent UX with smooth transitions
+5. Responsive design (mobile-first)
+6. Accessible interface (WCAG compliance)
+7. Consistent spacing and typography (8px grid)
+8. User-friendly forms with clear labels and validation
+9. Attractive cards with subtle shadows and borders
+10. Data-rich admin dashboard with charts and visualizations
+11. Mobile-friendly layouts for all pages
+12. Minimal and elegant design language
+13. Professional color palette (not gold/black enterprise theme)
+14. Readable fonts (Inter, Outfit, or similar modern typefaces)
+15. Clear call-to-action hierarchy
+16. Better product card layouts with prominent images
+17. Improved admin UX with better data presentation
+18. Consistent button styles and component patterns
+
+All existing functionality must be preserved:
+- Product catalog with search, filter, sort
+- Inquiry cart with WhatsApp checkout
+- AMC request form
+- Contact form with WhatsApp fallback
+- Admin CRUD for products, categories, inquiries, AMC
+- Command palette search
+- PDF quote generation
+- Google authentication for admin
+- Activity logging
+- Banner CMS
+- Responsive mega menu navigation
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================

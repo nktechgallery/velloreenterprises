@@ -15,6 +15,6 @@ test.describe('Catalog and Home Page', () => {
   test('should load products catalog', async ({ page }) => {
     await page.goto('/products');
     
-    await expect(page.getByRole('heading', { name: 'Fire Protection Catalog' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Search Catalog')).toBeVisible({ timeout: 15000 });
   });
 });

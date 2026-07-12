@@ -13,6 +13,7 @@ import CategoriesTab from '@/components/admin/CategoriesTab';
 import InquiriesTab from '@/components/admin/InquiriesTab';
 import AMCTab from '@/components/admin/AMCTab';
 import SettingsTab from '@/components/admin/SettingsTab';
+import SupportChatsTab from '@/components/admin/SupportChatsTab';
 
 export default function AdminPage() {
   const [user, setUser] = useState(null);
@@ -128,6 +129,7 @@ export default function AdminPage() {
       {activeTab === 'categories' && <CategoriesTab />}
       {activeTab === 'inquiries' && <InquiriesTab />}
       {activeTab === 'amc' && <AMCTab />}
+      {activeTab === 'chats' && <SupportChatsTab user={user} />}
       {activeTab === 'settings' && <SettingsTab />}
     </AdminLayout>
   );

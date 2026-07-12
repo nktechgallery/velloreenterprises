@@ -9,6 +9,15 @@ import dynamic from 'next/dynamic';
 import { COMPANY, SERVICES } from '@/lib/constants';
 
 import CommandPalette from '@/components/CommandPalette';
+import ExperienceLayer from '@/components/ExperienceLayer';
+import SupportChat from '@/components/SupportChat';
+import SiteAnalytics from '@/components/SiteAnalytics';
+import PwaRegistration from '@/components/PwaRegistration';
+import JsonLd from '@/components/JsonLd';
+import { Inter, Outfit } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
+const outfit = Outfit({ subsets: ['latin'], display: 'swap', variable: '--font-outfit' });
 
 export const metadata = {
   metadataBase: new URL(COMPANY.domain),
@@ -31,6 +40,9 @@ export const metadata = {
   authors: [{ name: COMPANY.name }],
   creator: COMPANY.name,
   publisher: COMPANY.name,
+  applicationName: COMPANY.name,
+  category: 'Fire Safety and Protection',
+  formatDetection: { email: false, address: false, telephone: false },
   alternates: { canonical: COMPANY.domain },
   robots: {
     index: true,
@@ -50,19 +62,24 @@ export const metadata = {
     siteName: COMPANY.name,
     title: `${COMPANY.name} | Premium Fire Safety Solutions`,
     description: 'Certified fire protection equipment, installations, AMC and audits for modern facilities across Tamil Nadu.',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: `${COMPANY.name} fire safety solutions` }],
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${COMPANY.name} fire safety solutions` }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${COMPANY.name} | Fire Safety Solutions`,
     description: 'Fire protection products, AMC and emergency support in Vellore, Tamil Nadu.',
-    images: ['/og-image.jpg'],
+    images: ['/opengraph-image'],
   },
+  manifest: '/manifest.json',
+  icons: { icon: [{ url:'/brand-mark.svg', type:'image/svg+xml' }], apple:'/brand-mark.svg' },
+  appleWebApp: { capable:true, title:COMPANY.name, statusBarStyle:'default' },
+  verification: { google:process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION, other:{ 'msvalidate.01':process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || '' } },
 };
 
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
+  '@id': `${COMPANY.domain}/#business`,
   name: COMPANY.name,
   description: 'Fire safety and fire protection solutions company in Vellore, Tamil Nadu.',
   url: COMPANY.domain,
@@ -79,9 +96,19 @@ const organizationSchema = {
   geo: { '@type': 'GeoCoordinates', latitude: 12.9165, longitude: 79.1325 },
   openingHours: 'Mo-Sa 09:00-18:00',
   priceRange: 'INR',
-  image: `${COMPANY.domain}/og-image.jpg`,
+  image: `${COMPANY.domain}/opengraph-image`,
+  logo: { '@type':'ImageObject', url:`${COMPANY.domain}/brand-mark.svg`, width:512, height:512 },
+  contactPoint: [{ '@type':'ContactPoint', telephone:COMPANY.phoneHref, contactType:'sales and customer support', areaServed:'IN', availableLanguage:['English','Tamil'] }],
+  areaServed: [{ '@type':'City', name:'Vellore' },{ '@type':'State', name:'Tamil Nadu' }],
+  hasMap: 'https://www.google.com/maps?q=Kangeyanallur%20Vellore%20Tamil%20Nadu%20632006',
   sameAs: [COMPANY.instagram],
   makesOffer: SERVICES.map((service) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: service } })),
+};
+
+const websiteSchema = {
+  '@context':'https://schema.org', '@type':'WebSite', '@id':`${COMPANY.domain}/#website`, url:COMPANY.domain, name:COMPANY.name,
+  publisher:{ '@id':`${COMPANY.domain}/#business` }, inLanguage:'en-IN',
+  potentialAction:{ '@type':'SearchAction', target:{ '@type':'EntryPoint', urlTemplate:`${COMPANY.domain}/products?search={search_term_string}` }, 'query-input':'required name=search_term_string' },
 };
 
 const faqSchema = {
@@ -117,31 +144,28 @@ const faqSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`scroll-smooth ${inter.variable} ${outfit.variable}`}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#050505" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
+        <meta name="theme-color" content="#f9f9ff" />
+        <JsonLd data={[organizationSchema,websiteSchema]} />
       </head>
-      <body className="noise-layer">
+      <body>
         <a href="#main-content" className="skip-to-content">Skip to content</a>
         <CartProvider>
           <div className="layout-boundary">
             <Navbar />
-            <main id="main-content">{children}</main>
+            <main id="main-content"><ExperienceLayer>{children}</ExperienceLayer></main>
             <Footer />
             <WhatsAppFloat />
+            <SupportChat />
           </div>
+          <CommandPalette />
           <ToasterProvider />
+          <PwaRegistration />
+          <SiteAnalytics />
         </CartProvider>
       </body>
     </html>

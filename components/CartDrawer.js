@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui';
 import CheckoutForm from '@/components/checkout/CheckoutForm';
+import toast from 'react-hot-toast';
 
 export default function CartDrawer({ isOpen, onClose }) {
   const { items, savedItems, removeItem, updateQuantity, totalItems, clearCart, proceedToWhatsApp, saveForLater, moveToCart } = useCart();
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderNotes, setOrderNotes] = useState('');
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const drawerRef = useRef(null);
 
   // Focus trap
@@ -25,11 +27,16 @@ export default function CartDrawer({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('cart-is-open');
     } else {
       document.body.style.overflow = '';
+      document.body.classList.remove('cart-is-open');
       setShowCheckout(false);
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('cart-is-open');
+    };
   }, [isOpen]);
 
   const subtotal = items.reduce((acc, item) => {
@@ -44,14 +51,14 @@ export default function CartDrawer({ isOpen, onClose }) {
     <>
       {isOpen && (
         <button
-          className="fixed inset-0 z-[70] cursor-default bg-black/65 backdrop-blur-sm"
+          className="cart-glass-backdrop fixed inset-0 z-[70] cursor-default"
           onClick={onClose}
           aria-label="Close cart backdrop"
         />
       )}
       <aside
         ref={drawerRef}
-        className={`fixed right-0 top-0 z-[80] flex h-dvh w-full max-w-[480px] flex-col border-l border-white/10 bg-[#080808]/95 shadow-[0_0_90px_rgba(0,0,0,.75)] backdrop-blur-2xl transition-transform duration-300 ${
+        className={`cart-glass-drawer fixed right-0 top-0 z-[80] flex h-dvh w-full max-w-[480px] flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"
@@ -59,7 +66,7 @@ export default function CartDrawer({ isOpen, onClose }) {
         aria-label="Inquiry cart"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-6">
+        <div className="cart-glass-header flex items-center justify-between p-6">
           <div>
             <p className="eyebrow mb-1">Inquiry cart</p>
             <h2 className="font-display text-2xl font-bold">
@@ -68,7 +75,7 @@ export default function CartDrawer({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/70 transition hover:text-white"
+            className="cart-close-button grid h-11 w-11 place-items-center rounded-full transition"
             aria-label="Close cart"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -95,16 +102,16 @@ export default function CartDrawer({ isOpen, onClose }) {
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <article key={item.id} className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
+                <article key={item.id} className="cart-glass-item rounded-3xl p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-white">{item.name}</h3>
+                      <h3 className="truncate font-semibold text-[#111824]">{item.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         {item.code && (
-                          <span className="text-xs font-semibold uppercase tracking-wider text-[#f5d76e]">{item.code}</span>
+                          <span className="text-xs font-semibold uppercase tracking-wider text-[#b80035]">{item.code}</span>
                         )}
                         {item.price && (
-                          <span className="text-xs text-white/50">INR {item.price}</span>
+                          <span className="text-xs text-[#667085]">INR {item.price}</span>
                         )}
                       </div>
                     </div>
@@ -112,7 +119,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       {saveForLater && (
                         <button
                           onClick={() => saveForLater(item.id)}
-                          className="text-xs text-white/35 transition hover:text-[#f5d76e] px-2 py-1 rounded"
+                          className="text-xs text-[#667085] transition hover:text-[#b80035] px-2 py-1 rounded"
                           aria-label={`Save ${item.name} for later`}
                         >
                           Save
@@ -120,7 +127,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       )}
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-xs text-white/35 transition hover:text-[#ffb199] px-2 py-1 rounded"
+                        className="text-xs text-[#667085] transition hover:text-[#b80035] px-2 py-1 rounded"
                         aria-label={`Remove ${item.name}`}
                       >
                         Remove
@@ -128,10 +135,10 @@ export default function CartDrawer({ isOpen, onClose }) {
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="inline-flex items-center rounded-full border border-white/10 bg-black/30 p-1">
+                    <div className="cart-quantity inline-flex items-center rounded-full p-1">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="grid h-8 w-8 place-items-center rounded-full text-[#f5d76e] hover:bg-white/[0.06] transition"
+                        className="grid h-8 w-8 place-items-center rounded-full text-[#b80035] hover:bg-white transition"
                         aria-label={`Decrease ${item.name} quantity`}
                       >
                         −
@@ -139,14 +146,14 @@ export default function CartDrawer({ isOpen, onClose }) {
                       <span className="min-w-8 text-center text-sm font-bold">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="grid h-8 w-8 place-items-center rounded-full text-[#f5d76e] hover:bg-white/[0.06] transition"
+                        className="grid h-8 w-8 place-items-center rounded-full text-[#b80035] hover:bg-white transition"
                         aria-label={`Increase ${item.name} quantity`}
                       >
                         +
                       </button>
                     </div>
                     {item.price && (
-                      <span className="text-sm font-bold text-[#f5d76e]">
+                      <span className="text-sm font-bold text-[#b80035]">
                         INR {(parseFloat(item.price) * item.quantity).toLocaleString('en-IN')}
                       </span>
                     )}
@@ -194,7 +201,7 @@ export default function CartDrawer({ isOpen, onClose }) {
 
         {/* Footer with pricing */}
         {items.length > 0 && (
-          <div className="border-t border-white/10 p-6 space-y-4">
+          <div className="cart-glass-footer p-6 space-y-4">
             {/* Price breakdown */}
             {subtotal > 0 && (
               <div className="space-y-2 text-sm">
@@ -222,20 +229,31 @@ export default function CartDrawer({ isOpen, onClose }) {
             
             <button
               onClick={async () => {
-                const { generatePdfQuote } = await import('@/lib/generatePdfQuote');
-                generatePdfQuote(items, subtotal, gst, total);
+                if (generatingPdf) return;
+                setGeneratingPdf(true);
+                try {
+                  const { generatePdfQuote } = await import('@/lib/generatePdfQuote');
+                  await generatePdfQuote(items, subtotal, gst, total, orderNotes);
+                  toast.success('PDF quotation downloaded.');
+                } catch (error) {
+                  console.error('[PDF quote]', error);
+                  toast.error('Unable to generate the PDF quotation.');
+                } finally {
+                  setGeneratingPdf(false);
+                }
               }}
-              className="w-full flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              disabled={generatingPdf}
+              className="cart-pdf-button w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold transition"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Download PDF Quote
+              {generatingPdf ? 'Generating PDF…' : 'Download PDF Quote'}
             </button>
 
             <button
               onClick={clearCart}
-              className="w-full rounded-full py-2 mt-2 text-sm text-white/35 transition hover:bg-transparent hover:text-white"
+              className="w-full rounded-full py-2 mt-2 text-sm text-[#667085] transition hover:text-[#b80035]"
             >
               Clear all items
             </button>

@@ -8,6 +8,7 @@ const tabs = [
   { id: 'categories', label: 'Categories', icon: '🏷️' },
   { id: 'inquiries', label: 'Inquiries', icon: '📩' },
   { id: 'amc', label: 'AMC', icon: '🔧' },
+  { id: 'chats', label: 'Support Chats', icon: 'CS' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 

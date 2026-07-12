@@ -5,9 +5,39 @@ const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function POST() {
+// Simple in-memory rate limiter
+const requestCounts = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 30;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = requestCounts.get(ip);
+
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    requestCounts.set(ip, { windowStart: now, count: 1 });
+    // Clean old entries periodically
+    if (requestCounts.size > 1000) {
+      for (const [key, val] of requestCounts) {
+        if (now - val.windowStart > RATE_LIMIT_WINDOW_MS) requestCounts.delete(key);
+      }
+    }
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > MAX_REQUESTS_PER_WINDOW;
+}
+
+export async function POST(request) {
   if (!API_SECRET) {
     return Response.json({ error: 'Cloudinary API secret not configured' }, { status: 500 });
+  }
+
+  // Rate limiting
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (isRateLimited(ip)) {
+    return Response.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
   const timestamp = Math.round(Date.now() / 1000);

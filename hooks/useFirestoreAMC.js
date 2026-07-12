@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { timestampValue } from '@/lib/dateUtils';
 
@@ -16,15 +16,24 @@ export function useFirestoreAMC() {
     async function loadAMC() {
       setLoading(true);
       try {
-        const q = query(collection(db, 'amc_requests'));
+        const q = query(collection(db, 'amc_requests'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         if (cancelled) return;
-        const data = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
-        setAmcRequests(data);
-      } catch (error) {
-        if (!cancelled) console.error('Error fetching AMC requests:', error);
+        setAmcRequests(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch (err) {
+        // Fallback: client-side sort if index doesn't exist
+        if (cancelled) return;
+        try {
+          const fallbackQuery = query(collection(db, 'amc_requests'));
+          const snapshot = await getDocs(fallbackQuery);
+          if (cancelled) return;
+          const data = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => timestampValue(b.createdAt || b.updatedAt) - timestampValue(a.createdAt || a.updatedAt));
+          setAmcRequests(data);
+        } catch (fallbackErr) {
+          if (!cancelled) console.error('Error fetching AMC requests:', fallbackErr);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
