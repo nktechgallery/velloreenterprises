@@ -792,6 +792,12 @@ select.admin-input {
   font-size: 0.95rem;
 }
 
+.faq-trigger,
+.faq-trigger > span:first-child {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
 /* ───────────────────────── Command Palette ───────────────────────── */
 .command-overlay {
   position: fixed;
@@ -1529,6 +1535,24 @@ h1,h2,h3,h4,h5,h6,.font-display,.font-condensed { font-family: var(--font-outfit
 .knowledge-content address { color:#566174; font-style:normal; line-height:1.7; }.location-map { width:100%; height:360px; margin-top:22px; border:0; border-radius:18px; }
 :focus-visible { outline:3px solid rgba(184,0,53,.35) !important; outline-offset:3px !important; }
 @media(max-width:640px){.knowledge-content{padding-block:40px 70px}.knowledge-cta>div{flex-direction:column}.knowledge-cta .btn{width:100%}}
+
+/* Persistent game-style website guide */
+.guide-robot-root { position:fixed; z-index:65; left:22px; bottom:22px; display:flex; align-items:flex-end; gap:10px; transition:transform .25s ease; }
+.guide-robot-root.is-scrolled { transform:translateY(-4px); }
+.guide-robot-button { position:relative; width:64px; height:64px; flex:none; display:grid; place-items:center; border:1px solid rgba(255,255,255,.92); border-radius:20px; background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(232,238,250,.9)); color:#b80035; box-shadow:0 16px 42px rgba(31,41,55,.2),inset 0 1px white; backdrop-filter:blur(20px) saturate(150%); transition:transform .2s ease,box-shadow .2s ease; }
+.guide-robot-button:hover { transform:translateY(-3px) rotate(-2deg); box-shadow:0 20px 50px rgba(31,41,55,.24); }.guide-robot-button:active { transform:scale(.96); }
+.guide-robot-svg { width:44px; height:44px; fill:#fff3f6; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }.guide-robot-svg circle:not(:first-of-type) { fill:#b80035; }
+.guide-online-dot { position:absolute; right:4px; bottom:5px; width:12px; height:12px; border:3px solid white; border-radius:50%; background:#2caf60; }
+.guide-robot-dialog { width:min(340px,calc(100vw - 104px)); padding:15px; border:1px solid rgba(255,255,255,.95); border-radius:18px 18px 6px 18px; background:rgba(255,255,255,.92); color:#111824; box-shadow:0 20px 60px rgba(31,41,55,.2); backdrop-filter:blur(26px) saturate(155%); animation:guideDialogIn .28s cubic-bezier(.22,1,.36,1); }
+.guide-dialog-top { display:flex; align-items:center; justify-content:space-between; }.guide-dialog-top>span { color:#b80035; font-size:8px; font-weight:800; letter-spacing:.18em; }.guide-dialog-top button { width:24px; height:24px; display:grid; place-items:center; border-radius:7px; color:#7b8494; font-size:18px; }.guide-dialog-top button:hover { background:#f1f4f8; color:#b80035; }
+.guide-robot-dialog>p { margin-top:9px; color:#344054; font-size:12px; line-height:1.55; }
+.guide-dialog-actions { display:flex; align-items:center; gap:7px; margin-top:13px; }.guide-dialog-actions button { min-height:34px; padding:0 11px; border:1px solid #dce2eb; border-radius:9px; color:#566174; font-size:10px; font-weight:650; }.guide-dialog-actions button:hover { border-color:#b80035; color:#b80035; }.guide-dialog-actions .guide-primary-action { border-color:#b80035; background:#b80035; color:white; }.guide-dialog-actions .guide-primary-action:hover { background:#97002c; color:white; }
+.guide-progress { display:flex; gap:4px; margin-top:12px; }.guide-progress span { width:15px; height:3px; border-radius:99px; background:#dce2eb; transition:width .2s ease,background .2s ease; }.guide-progress span.active { width:26px; background:#b80035; }
+.guide-target-highlight { position:relative; z-index:2; border-radius:12px; outline:3px solid rgba(184,0,53,.5)!important; outline-offset:5px!important; animation:guideTargetPulse .8s ease-in-out 3; }
+@keyframes guideDialogIn { from { opacity:0; transform:translate(-10px,10px) scale(.96); } to { opacity:1; transform:none; } }
+@keyframes guideTargetPulse { 0%,100% { box-shadow:0 0 0 0 rgba(184,0,53,.12); } 50% { box-shadow:0 0 0 14px rgba(184,0,53,.12); } }
+.cart-is-open .guide-robot-root { z-index:65; pointer-events:none; }
+@media(max-width:640px){.guide-robot-root{left:12px;bottom:14px;gap:7px}.guide-robot-button{width:54px;height:54px;border-radius:17px}.guide-robot-svg{width:37px;height:37px}.guide-robot-dialog{width:min(300px,calc(100vw - 78px));padding:13px}.guide-dialog-actions{align-items:stretch;flex-direction:column}.guide-dialog-actions button{width:100%}}
 
 /* ───────────────────────── Accessibility: Reduced Motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {

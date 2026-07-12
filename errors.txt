@@ -587,3 +587,14 @@ Cause: Initial implementation concentrated metadata in the root layout and did n
 Resolution: Added reusable metadata/schema builders, route metadata layouts, comprehensive LocalBusiness/WebSite/Breadcrumb/Product/Service/FAQ schemas, generated social artwork, dynamic product and image sitemaps, video-sitemap readiness, AI crawler directives, a fire-safety guide, Vellore location page, consent-gated analytics/event tracking, optimized Next images, enhanced CSP/security headers, and an offline PWA shell. Verified all public endpoints return HTTP 200 and browser regressions pass.
 Status: Fixed
 ==================================================
+==================================================
+Date: 2026-07-12
+Time: 04:00 IST
+Page/Component: Global interactive guide
+File: components/GuideRobot.js, app/layout.js, app/globals.css
+Operation: Add persistent game-style website walkthrough
+Error: Users had no always-available contextual guidance across routes, scrolling, and navigation changes.
+Cause: Existing support chat answered questions but did not provide deterministic page walkthroughs or focus relevant controls.
+Resolution: Added a globally mounted guide robot with default product prompt, route-specific tutorial steps, smooth target scrolling, focus transfer, temporary target highlighting, step progress, route reset, minimized availability, responsive positioning, reduced-motion compatibility, and safe cart stacking.
+Status: Fixed
+==================================================

@@ -32,6 +32,7 @@ Use this file as the first project reference before coding in this repo. Update 
 - `lib/seo.js`, `components/JsonLd.js`: shared metadata and structured-data builders.
 - `components/SiteAnalytics.js`: consent-gated GA4, GTM, Clarity, and conversion event preparation.
 - `components/PwaRegistration.js`, `public/sw.js`: production service-worker registration and offline shell caching.
+- `components/GuideRobot.js`: persistent route-aware tutorial assistant with scroll-to/focus walkthrough actions.
 - `components/ui.js`: shared Section, Button, MetricCard, SkeletonGrid, and EmptyState primitives.
 - `components/Navbar.js`, `components/CartDrawer.js`, `components/Footer.js`, `components/WhatsAppFloat.js`: shared shell and contact surfaces.
 - `components/PassMethod.js`: static PASS training section.

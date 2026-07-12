@@ -13,6 +13,7 @@ import ExperienceLayer from '@/components/ExperienceLayer';
 import SupportChat from '@/components/SupportChat';
 import SiteAnalytics from '@/components/SiteAnalytics';
 import PwaRegistration from '@/components/PwaRegistration';
+import GuideRobot from '@/components/GuideRobot';
 import JsonLd from '@/components/JsonLd';
 import { Inter, Outfit } from 'next/font/google';
 
@@ -161,6 +162,7 @@ export default function RootLayout({ children }) {
             <Footer />
             <WhatsAppFloat />
             <SupportChat />
+            <GuideRobot />
           </div>
           <CommandPalette />
           <ToasterProvider />
